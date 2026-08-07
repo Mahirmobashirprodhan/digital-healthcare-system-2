@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Healthcare System – Smart Online Healthcare Platform</title>
+  <meta name="description" content="Comprehensive full-stack digital healthcare system providing online doctor appointments, WebRTC video consultation, lab test booking, home healthcare, blood donor bank, and digital prescriptions.">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/consultation.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="brand-logo" onclick="App.navigateTo('home')">
+      <div class="brand-icon">✚</div>
+      <span>DigitalCare<span style="color: var(--accent-blue);">.bd</span></span>
+    </div>
+
+    <ul class="nav-links">
+      <li><a class="nav-link active" id="nav-link-home" onclick="App.navigateTo('home')">Home</a></li>
+      <li><a class="nav-link" id="nav-link-search" onclick="App.navigateTo('search')">Find Doctors</a></li>
+      <li><a class="nav-link" onclick="App.openModal('modal-blood-donor')">Blood Donors</a></li>
+      <li><a class="nav-link" onclick="App.openModal('modal-home-service')">Home Care</a></li>
+      <li><a class="nav-link" onclick="App.openModal('modal-contact')">Contact Us</a></li>
+      <li><a class="nav-link" id="nav-link-patient" style="display:none;" onclick="App.navigateTo('patient-dashboard')">My Dashboard</a></li>
+      <li><a class="nav-link" id="nav-link-doctor" style="display:none;" onclick="App.navigateTo('doctor-dashboard')">Doctor Portal</a></li>
+      <li><a class="nav-link" id="nav-link-admin" style="display:none;" onclick="App.navigateTo('admin-dashboard')">Admin Panel</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <button class="btn btn-secondary btn-sm" onclick="App.toggleTheme()" title="Toggle Dark/Light Mode">🌙 / ☀️</button>
+      <div id="nav-auth-container">
+        <!-- Auth buttons injected by JS -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- 1. HOME VIEW -->
+    <section id="view-home" class="view-section active">
+      <div class="hero">
+        <div>
+          <h1 class="hero-title">Smart Digital Healthcare <span class="gradient-text">For Everyone</span></h1>
+          <p class="hero-subtitle">Access world-class specialist doctors, book diagnostic lab tests, schedule home healthcare services, and manage your medical history securely from a single platform.</p>
+          
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="App.navigateTo('search')">🔍 Search Doctors & Book</button>
+            <button class="btn btn-emerald" onclick="App.openModal('modal-home-service')">🏠 Request Home Healthcare</button>
+            <button class="btn btn-secondary" onclick="App.openModal('modal-blood-donor')">🩸 Search Blood Donors</button>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat-item">
+              <h3>50+</h3>
+              <p>Specialist Doctors</p>
+            </div>
+            <div class="stat-item">
+              <h3>10,000+</h3>
+              <p>Patients Served</p>
+            </div>
+            <div class="stat-item">
+              <h3>24/7</h3>
+              <p>Emergency Care</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80" alt="Digital Healthcare Telemedicine" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-glow); border: 1px solid var(--border-glow);">
+        </div>
+      </div>
+
+      <!-- Services Grid -->
+      <div class="section-header">
+        <h2 class="section-title">Comprehensive Healthcare Services</h2>
+        <p class="section-desc">Everything you need for seamless personal and family medical care.</p>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-card" onclick="App.navigateTo('search')">
+          <div class="service-icon">👨‍⚕️</div>
+          <h3>Doctor Teleconsultation</h3>
+          <p>Connect with top cardiologists, neurologists, pediatricians, and gynecologists via high-definition WebRTC video call.</p>
+        </div>
+
+        <div class="service-card" onclick="App.openModal('modal-lab-booking')">
+          <div class="service-icon">🧪</div>
+          <h3>Diagnostic Lab Tests</h3>
+          <p>Book CBC, Lipid Profile, Thyroid, or HbA1c tests online with downloadable digital PDF reports.</p>
+        </div>
+
+        <div class="service-card" onclick="App.openModal('modal-home-service')">
+          <div class="service-icon">🏠</div>
+          <h3>Home Nursing & Sample Collection</h3>
+          <p>Trained medical staff visit your home for blood sample collection, elder care, and physical therapy.</p>
+        </div>
+
+        <div class="service-card" onclick="App.openModal('modal-reminder')">
+          <div class="service-icon">💊</div>
+          <h3>Medicine Reminders</h3>
+          <p>Never miss a dose. Set up smart daily medicine alerts with automatic browser push notifications.</p>
+        </div>
+
+        <div class="service-card" onclick="App.openModal('modal-blood-donor')">
+          <div class="service-icon">🩸</div>
+          <h3>Emergency Blood Donors</h3>
+          <p>Instant search for voluntary blood donors filtered by blood group (A+, B+, O-, AB+) and area location.</p>
+        </div>
+
+        <div class="service-card" onclick="App.openModal('modal-emergency')">
+          <div class="service-icon">🚨</div>
+          <h3>24/7 Hotline & Emergency</h3>
+          <p>Instant access to emergency medical dispatchers, cardiac hotline, and quick ambulance request.</p>
+        </div>
+      </div>
+
+      <!-- Payment Partners Banner -->
+      <div class="card-panel" style="text-align: center; background: var(--bg-card); padding: 2rem;">
+        <h3 style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem;">SECURE INTEGRATED PAYMENT GATEWAYS</h3>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 2.5rem; flex-wrap: wrap;">
+          <span style="font-weight: 800; font-size: 1.3rem; color: #0ea5e9;">SSLCommerz</span>
+          <span style="font-weight: 800; font-size: 1.4rem; color: #e2136e;">bKash</span>
+          <span style="font-weight: 800; font-size: 1.4rem; color: #f7921e;">Nagad</span>
+          <span style="font-weight: 800; font-size: 1.4rem; color: #8c3494;">Rocket</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. DOCTOR SEARCH VIEW -->
+    <section id="view-search" class="view-section">
+      <div class="section-header">
+        <h2 class="section-title">Find & Book Specialist Doctors</h2>
+        <p class="section-desc">Search by doctor name, medical department, hospital, consultation fee, or rating.</p>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="filter-name" class="form-control" placeholder="Search doctor by name or hospital..." oninput="DoctorSearch.fetchDoctors({ name: this.value, department: document.getElementById('filter-dept').value })">
+        
+        <select id="filter-dept" class="form-control" onchange="DoctorSearch.fetchDoctors({ department: this.value, name: document.getElementById('filter-name').value })">
+          <option value="">All Departments</option>
+          <option value="Cardiology">Cardiology</option>
+          <option value="Neurology">Neurology</option>
+          <option value="Pediatrics">Pediatrics</option>
+          <option value="Gynecology">Gynecology</option>
+          <option value="Orthopedics">Orthopedics</option>
+        </select>
+
+        <select id="filter-fee" class="form-control" onchange="DoctorSearch.fetchDoctors({ max_fee: this.value })">
+          <option value="">Any Fee Range</option>
+          <option value="1000">Under ৳1000</option>
+          <option value="1200">Under ৳1200</option>
+          <option value="1500">Under ৳1500</option>
+        </select>
+
+        <button class="btn btn-primary" onclick="DoctorSearch.fetchDoctors()">Reset Filters</button>
+      </div>
+
+      <div id="search-doctors-results">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- 3. DOCTOR DETAIL VIEW -->
+    <section id="view-doctor-detail" class="view-section">
+      <button class="btn btn-secondary btn-sm" onclick="App.navigateTo('search')" style="margin-bottom: 1.5rem;">← Back to Doctors List</button>
+      <div id="doctor-detail-container">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- 4. PATIENT DASHBOARD VIEW -->
+    <section id="view-patient-dashboard" class="view-section">
+      <div class="dashboard-grid">
+        <div class="dashboard-sidebar">
+          <div class="user-profile-summary">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Patient Avatar" class="avatar-lg">
+            <h3 style="font-size: 1.2rem;" id="p-dash-name">Rahim Uddin</h3>
+            <p style="font-size: 0.85rem; color: var(--accent-blue);">Patient Account</p>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem;" id="p-dash-details">Blood Group: <strong style="color: var(--accent-rose);">A+</strong> | Age: 34</div>
+            <button class="btn btn-secondary btn-sm" onclick="App.openModal('modal-patient-profile')" style="margin-top: 0.75rem; width: 100%;">✏️ Edit Profile</button>
+          </div>
+
+          <ul class="sidebar-menu">
+            <li class="sidebar-item active" onclick="App.navigateTo('patient-dashboard')">📅 My Appointments</li>
+            <li class="sidebar-item" onclick="App.openModal('modal-reminder')">💊 Medicine Reminders</li>
+            <li class="sidebar-item" onclick="App.openModal('modal-lab-booking')">🧪 Lab Test Bookings</li>
+            <li class="sidebar-item" onclick="App.openModal('modal-home-service')">🏠 Home Healthcare</li>
+          </ul>
+        </div>
+
+        <div>
+          <!-- Patient Appointments Panel -->
+          <div class="card-panel">
+            <div class="panel-header">
+              <h3 class="panel-title">My Consultation Appointments</h3>
+              <button class="btn btn-primary btn-sm" onclick="App.navigateTo('search')">+ Book New Doctor</button>
+            </div>
+            <div class="data-table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Doctor</th>
+                    <th>Date & Time</th>
+                    <th>Fee</th>
+                    <th>Status</th>
+                    <th>Symptoms</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="patient-appointments-list">
+                  <!-- Injected via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Digital Prescriptions Panel -->
+          <div class="card-panel">
+            <h3 class="panel-title" style="margin-bottom: 1rem;">My Digital Prescriptions (PDF Exportable)</h3>
+            <div id="patient-prescriptions-list">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Medical History Timeline Panel -->
+          <div class="card-panel">
+            <h3 class="panel-title" style="margin-bottom: 1rem;">Medical History & Diagnostic Reports</h3>
+            <div class="timeline" id="patient-medical-timeline">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Medicine Reminders Panel -->
+          <div class="card-panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Daily Medicine Reminders</h3>
+              <button class="btn btn-emerald btn-sm" onclick="App.openModal('modal-reminder')">+ Add Reminder</button>
+            </div>
+            <div id="patient-reminders-list">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Lab Bookings Panel -->
+          <div class="card-panel">
+            <h3 class="panel-title" style="margin-bottom: 1rem;">Diagnostic Lab Bookings</h3>
+            <div id="patient-labs-list">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Home Healthcare Requests Panel -->
+          <div class="card-panel">
+            <h3 class="panel-title" style="margin-bottom: 1rem;">Home Healthcare Requests</h3>
+            <div id="patient-home-services-list">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. DOCTOR DASHBOARD VIEW -->
+    <section id="view-doctor-dashboard" class="view-section">
+      <div class="dashboard-grid">
+        <div class="dashboard-sidebar">
+          <div class="user-profile-summary">
+            <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=200&q=80" alt="Doctor Avatar" class="avatar-lg">
+            <h3 style="font-size: 1.2rem;">Dr. Anisur Rahman</h3>
+            <p style="font-size: 0.85rem; color: var(--accent-blue);">Cardiology Specialist</p>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">Square Hospital, Dhaka</p>
+          </div>
+
+          <div style="background: rgba(14, 165, 233, 0.1); border: 1px solid var(--accent-blue); padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.8rem; color: var(--accent-blue);">
+            🔒 Privacy Access Control Enabled: You can access medical records ONLY for patients with confirmed or past consultations with you. All accesses are audited.
+          </div>
+        </div>
+
+        <div>
+          <!-- Doctor Stats Widgets -->
+          <div class="stats-cards-grid">
+            <div class="stat-card">
+              <div class="stat-icon-wrapper stat-icon-blue">👥</div>
+              <div class="stat-info">
+                <h4 id="doc-stat-total">0</h4>
+                <p>Total Patients</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-wrapper stat-icon-emerald">📅</div>
+              <div class="stat-info">
+                <h4 id="doc-stat-confirmed">0</h4>
+                <p>Upcoming Appointments</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon-wrapper stat-icon-purple">✅</div>
+              <div class="stat-info">
+                <h4 id="doc-stat-completed">0</h4>
+                <p>Completed Consultations</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scheduled Appointments Table -->
+          <div class="card-panel">
+            <h3 class="panel-title" style="margin-bottom: 1rem;">My Scheduled Appointments</h3>
+            <div class="data-table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Patient Name</th>
+                    <th>Date & Time</th>
+                    <th>Symptoms</th>
+                    <th>Status</th>
+                    <th>Privacy Guard</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="doctor-appointments-list">
+                  <!-- Injected via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ADMIN DASHBOARD VIEW -->
+    <section id="view-admin-dashboard" class="view-section">
+      <div class="section-header">
+        <h2 class="section-title">System Control & Privacy Audit Panel</h2>
+        <p class="section-desc">Monitor healthcare statistics, manage system users, and track medical record privacy access logs.</p>
+      </div>
+
+      <!-- Admin Overview Stats Cards -->
+      <div class="stats-cards-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrapper stat-icon-blue">🩺</div>
+          <div class="stat-info">
+            <h4 id="admin-stat-doctors">0</h4>
+            <p>Registered Doctors</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper stat-icon-emerald">👤</div>
+          <div class="stat-info">
+            <h4 id="admin-stat-patients">0</h4>
+            <p>Registered Patients</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper stat-icon-purple">📅</div>
+          <div class="stat-info">
+            <h4 id="admin-stat-appointments">0</h4>
+            <p>Appointments Booked</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper stat-icon-amber">💰</div>
+          <div class="stat-info">
+            <h4 id="admin-stat-revenue">৳0</h4>
+            <p>Total Platform Revenue</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medical Record Privacy Audit Log Table -->
+      <div class="card-panel">
+        <h3 class="panel-title" style="margin-bottom: 1rem;">🛡️ Medical Records Security Access Audit Trail</h3>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Actor User</th>
+                <th>Target Patient</th>
+                <th>Action</th>
+                <th>API Route</th>
+              </tr>
+            </thead>
+            <tbody id="admin-audit-logs-list">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Users Management Table -->
+      <div class="card-panel">
+        <h3 class="panel-title" style="margin-bottom: 1rem;">Registered System Users</h3>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Joined Date</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-list">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       MODALS & OVERLAYS
+       ========================================================================== -->
+
+  <!-- 1. AUTH MODAL -->
+  <div id="modal-auth" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="display: flex; gap: 1rem;">
+          <button id="auth-tab-login" class="btn btn-secondary btn-sm active" onclick="App.openAuthModal('login')">Sign In</button>
+          <button id="auth-tab-register" class="btn btn-secondary btn-sm" onclick="App.openAuthModal('register')">Create Account</button>
+        </div>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="login-email" class="form-control" placeholder="patient@demo.com or doctor@demo.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <a onclick="App.openModal('modal-forgot-password'); App.closeModal('modal-auth')" style="font-size: 0.85rem; color: var(--accent-blue); cursor: pointer;">Forgot Password?</a>
+          <small style="color: var(--text-muted);">Demo Password: <strong>password123</strong></small>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+        
+        <div style="text-align: center; margin: 1rem 0 0.5rem; font-size: 0.85rem; color: var(--text-muted);">OR</div>
+        <button type="button" class="btn btn-secondary" onclick="Auth.loginGoogle()" style="width: 100%; font-size: 0.9rem;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" style="width: 18px; margin-right: 0.5rem;"> Continue with Google
+        </button>
+      </form>
+
+      <!-- Registration Form -->
+      <form id="form-register" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Account Role</label>
+          <select id="reg-role" class="form-control" onchange="
+            document.getElementById('patient-fields').style.display = this.value === 'patient' ? 'block' : 'none';
+            document.getElementById('doctor-fields').style.display = this.value === 'doctor' ? 'block' : 'none';
+          ">
+            <option value="patient">Patient Account</option>
+            <option value="doctor">Doctor Account</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="reg-name" class="form-control" placeholder="e.g. Rahim Uddin" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="text" id="reg-phone" class="form-control" placeholder="+8801712345678" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="reg-email" class="form-control" placeholder="name@domain.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="reg-password" class="form-control" placeholder="Create strong password" required>
+        </div>
+
+        <div id="patient-fields">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Blood Group</label>
+              <select id="reg-blood-group" class="form-control">
+                <option value="A+">A+</option><option value="A-">A-</option>
+                <option value="B+">B+</option><option value="B-">B-</option>
+                <option value="O+">O+</option><option value="O-">O-</option>
+                <option value="AB+">AB+</option><option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Age</label>
+              <input type="number" id="reg-age" class="form-control" value="30">
+            </div>
+          </div>
+        </div>
+
+        <div id="doctor-fields" style="display: none;">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Specialization</label>
+              <input type="text" id="reg-specialization" class="form-control" placeholder="Cardiology">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Consultation Fee (৳)</label>
+              <input type="number" id="reg-fee" class="form-control" value="1200">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hospital / Clinic</label>
+            <input type="text" id="reg-hospital" class="form-control" placeholder="Square Hospital, Dhaka">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Complete Registration</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD MODAL -->
+  <div id="modal-forgot-password" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Reset Password</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <form onsubmit="
+        event.preventDefault();
+        const email = document.getElementById('reset-email').value;
+        fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({email})
+        }).then(r => r.json()).then(d => {
+          App.showToast(d.message || 'Password reset email sent!', 'info');
+          App.closeModals();
+        });
+      ">
+        <div class="form-group">
+          <label class="form-label">Enter Account Email</label>
+          <input type="email" id="reset-email" class="form-control" placeholder="name@domain.com" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Reset Instructions</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONTACT FORM MODAL -->
+  <div id="modal-contact" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">📩 Contact Healthcare Support</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <form onsubmit="
+        event.preventDefault();
+        const name = document.getElementById('c-name').value;
+        const email = document.getElementById('c-email').value;
+        const message = document.getElementById('c-msg').value;
+        fetch('/api/contact', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({name, email, message})
+        }).then(r => r.json()).then(d => {
+          App.showToast(d.message, 'success');
+          App.closeModals();
+        });
+      ">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Your Name</label>
+            <input type="text" id="c-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="c-email" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea id="c-msg" class="form-control" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. APPOINTMENT BOOKING MODAL -->
+  <div id="modal-appointment" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Book Doctor Appointment</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+
+      <form id="form-appointment-booking">
+        <input type="hidden" id="booking-doc-id">
+        <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--border-glow);">
+          <strong style="font-size: 1.1rem; color: var(--accent-blue);" id="booking-doc-name">Doctor Name</strong>
+          <div style="font-size: 0.9rem; color: var(--accent-emerald);" id="booking-doc-fee">৳1200</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Select Preferred Date</label>
+          <input type="date" id="booking-date" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Select Available Time Slot</label>
+          <select id="booking-slot" class="form-control" required>
+            <option value="10:00 AM">10:00 AM - 10:30 AM</option>
+            <option value="11:00 AM">11:00 AM - 11:30 AM</option>
+            <option value="02:30 PM">02:30 PM - 03:00 PM</option>
+            <option value="04:00 PM">04:00 PM - 04:30 PM</option>
+            <option value="07:00 PM">07:00 PM - 07:30 PM</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Describe Symptoms or Medical Reason</label>
+          <textarea id="booking-symptoms" class="form-control" rows="3" placeholder="e.g. Chest tightness, blood pressure checkup..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Proceed to Payment & Confirm</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. DIGITAL PRESCRIPTION MODAL (DOCTOR) -->
+  <div id="modal-prescription" class="modal-overlay">
+    <div class="modal-content" style="max-width: 750px;">
+      <div class="modal-header">
+        <h3 class="modal-title">✍️ Write Digital Prescription</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+
+      <form id="form-prescription" onsubmit="DoctorDashboard.submitPrescription(event)">
+        <input type="hidden" id="rx-appt-id">
+        <input type="hidden" id="rx-patient-id">
+
+        <div style="font-size: 1rem; margin-bottom: 1rem;">
+          Patient: <strong id="rx-patient-name-display" style="color: var(--accent-blue);">Patient Name</strong>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Clinical Diagnosis</label>
+          <input type="text" id="rx-diagnosis" class="form-control" placeholder="e.g. Essential Hypertension Stage 1" required>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <label class="form-label" style="margin:0;">Prescribed Medications (Rx)</label>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="DoctorDashboard.addMedicineRow()">+ Add Medicine</button>
+          </div>
+          <div id="rx-medicines-container">
+            <!-- Dynamic Medicine Rows -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Doctor Advice & Lifestyle Instructions</label>
+          <textarea id="rx-instructions" class="form-control" rows="3" placeholder="e.g. Low sodium diet, 30 mins daily walk, recheck BP after 3 weeks."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-emerald" style="width: 100%;">Sign & Issue Digital Prescription</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. DOCTOR PATIENT RECORDS INSPECT MODAL -->
+  <div id="modal-doctor-patient-records" class="modal-overlay">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="patient-records-title">Medical Records</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <div id="doctor-patient-records-modal-body">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. WEBRTC VIDEO CONSULTATION MODAL -->
+  <div id="modal-webrtc-consult" class="modal-overlay">
+    <div class="modal-content" style="max-width: 1100px; padding: 1.5rem; background: #090d16;">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div>
+          <h3 class="modal-title" style="color: #fff;">🎥 Real-Time WebRTC Video Consultation</h3>
+          <span style="font-size: 0.85rem; color: var(--accent-blue);">Connected with <span id="webrtc-peer-name">Doctor/Patient</span> (<span id="webrtc-peer-role">Role</span>)</span>
+        </div>
+        <button class="close-btn" onclick="VideoConsult.endCall()">✕</button>
+      </div>
+
+      <div class="consultation-wrapper">
+        <div class="video-feed-container">
+          <div class="call-status-badge">
+            <div class="pulse-dot"></div>
+            <span>LIVE CONSULTATION • <span id="webrtc-timer">00:00</span></span>
+          </div>
+
+          <div class="remote-video-screen">
+            <div class="remote-avatar-placeholder">
+              <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=300&q=80" alt="Consultant Video Stream">
+              <p style="color: #fff; font-weight: 600;">Encrypted HD Video Feed</p>
+            </div>
+          </div>
+
+          <div class="local-video-pip">
+            <video id="webrtc-local-video" autoplay muted playsinline></video>
+          </div>
+
+          <div class="call-controls-bar">
+            <button class="control-btn" id="btn-toggle-mic" onclick="VideoConsult.toggleAudio()" title="Mute/Unmute Mic">🎙️</button>
+            <button class="control-btn" id="btn-toggle-cam" onclick="VideoConsult.toggleVideo()" title="Turn Camera On/Off">📷</button>
+            <button class="control-btn btn-hangup" onclick="VideoConsult.endCall()" title="End Consultation">📞</button>
+          </div>
+        </div>
+
+        <div class="consultation-side-drawer">
+          <h4 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-primary);">Clinical Live Notes</h4>
+          <textarea class="form-control" rows="12" placeholder="Write consultation observations, patient symptoms, or real-time notes here..." style="font-size: 0.85rem; height: 100%; resize: none;"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. BANGLADESHI PAYMENT GATEWAY MODAL -->
+  <div id="modal-payment" class="modal-overlay">
+    <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Payment Checkout</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.9rem; color: var(--text-secondary);">Total Payable Amount</div>
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--accent-emerald);" id="payment-amount-display">৳1200</div>
+      </div>
+
+      <!-- Step 1: Select Gateway -->
+      <div id="payment-step-gateway">
+        <label class="form-label" style="margin-bottom: 0.75rem;">Select Payment Method</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('bKash')" style="border-color: #e2136e; color: #e2136e; font-size: 1.1rem; font-weight: 800;">bKash</button>
+          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Nagad')" style="border-color: #f7921e; color: #f7921e; font-size: 1.1rem; font-weight: 800;">Nagad</button>
+          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Rocket')" style="border-color: #8c3494; color: #8c3494; font-size: 1.1rem; font-weight: 800;">Rocket</button>
+          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('SSLCommerz')" style="border-color: #0ea5e9; color: #0ea5e9; font-size: 1rem; font-weight: 800;">SSLCommerz</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Verification PIN/OTP -->
+      <div id="payment-step-otp" style="display: none;">
+        <div style="background: var(--bg-primary); padding: 0.75rem; border-radius: var(--radius-md); margin-bottom: 1rem; text-align: center;">
+          Selected Gateway: <strong id="payment-gateway-brand">bKash</strong>
+        </div>
+        <form onsubmit="PaymentSystem.confirmPayment(event)">
+          <div class="form-group">
+            <label class="form-label">Enter Mobile Wallet PIN / OTP</label>
+            <input type="password" id="payment-pin-input" class="form-control" placeholder="e.g. 12345" required>
+          </div>
+          <button type="submit" class="btn btn-emerald" style="width: 100%;">Confirm Payment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. LAB TEST BOOKING MODAL -->
+  <div id="modal-lab-booking" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Book Diagnostic Lab Test</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <form id="form-lab-booking">
+        <div class="form-group">
+          <label class="form-label">Select Lab Test</label>
+          <select id="lab-booking-test-id" class="form-control" onchange="
+            const feeMap = {'1': 600, '2': 1200, '3': 800, '4': 900, '5': 1400, '6': 750};
+            document.getElementById('lab-booking-fee').textContent = '৳' + (feeMap[this.value] || 600);
+          ">
+            <option value="1">Complete Blood Count (CBC) — ৳600</option>
+            <option value="2">Lipid Profile Test — ৳1200</option>
+            <option value="3">HbA1c (Glycated Hemoglobin) — ৳800</option>
+            <option value="4">Chest X-Ray (PA View) — ৳900</option>
+            <option value="5">Thyroid Profile (T3, T4, TSH) — ৳1400</option>
+            <option value="6">Serum Creatinine Kidney Panel — ৳750</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Booking Date</label>
+            <input type="date" id="lab-booking-date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sample Collection Type</label>
+            <select id="lab-booking-type" class="form-control">
+              <option value="Lab Visit">Diagnostic Center Visit</option>
+              <option value="Home Collection">Home Sample Collection (+৳200)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Collection Address</label>
+          <input type="text" id="lab-booking-address" class="form-control" placeholder="House/Road, Area, City" required>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <span>Test Fee:</span>
+          <strong id="lab-booking-fee" style="font-size: 1.2rem; color: var(--accent-emerald);">৳600</strong>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Pay & Schedule Test</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 8. HOME HEALTHCARE MODAL -->
+  <div id="modal-home-service" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">🏠 Request Home Healthcare Service</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <form id="form-home-service">
+        <div class="form-group">
+          <label class="form-label">Select Home Healthcare Service</label>
+          <select id="hs-service-type" class="form-control">
+            <option value="Home Sample Collection">Blood & Urine Sample Collection at Home</option>
+            <option value="Home Nursing Care">Qualified Nurse Home Care (24h / Shift)</option>
+            <option value="Elderly & Caregiver Support">Elderly Caregiver & Medication Assistance</option>
+            <option value="Physiotherapy Session">Physical Therapy & Rehabilitation Session</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Preferred Date</label>
+            <input type="date" id="hs-date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone</label>
+            <input type="text" id="hs-phone" class="form-control" placeholder="+8801712345678" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Detailed Address</label>
+          <textarea id="hs-address" class="form-control" rows="2" placeholder="Full house address, flat no, landmark..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-emerald" style="width: 100%;">Submit Request</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 9. BLOOD DONOR MODAL -->
+  <div id="modal-blood-donor" class="modal-overlay">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🩸 Emergency Blood Bank & Donors</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+
+      <div class="filter-bar" style="grid-template-columns: 1fr 1fr auto;">
+        <select id="bd-search-group" class="form-control">
+          <option value="">All Blood Groups</option>
+          <option value="A+">A+</option><option value="A-">A-</option>
+          <option value="B+">B+</option><option value="B-">B-</option>
+          <option value="O+">O+</option><option value="O-">O-</option>
+          <option value="AB+">AB+</option><option value="AB-">AB-</option>
+        </select>
+        <input type="text" id="bd-search-city" class="form-control" placeholder="City or Area (e.g. Dhanmondi)">
+        <button class="btn btn-primary btn-sm" onclick="
+          const group = document.getElementById('bd-search-group').value;
+          const city = document.getElementById('bd-search-city').value;
+          fetch(`/api/blood-donors?blood_group=${group}&city=${city}`).then(r => r.json()).then(d => {
+            const list = document.getElementById('blood-donors-results');
+            list.innerHTML = d.donors.map(donor => `
+              <div style='background: var(--bg-primary); padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;'>
+                <div>
+                  <strong style='font-size: 1.05rem;'>${donor.name}</strong> <span class='badge badge-rejected'>${donor.blood_group}</span>
+                  <div style='font-size: 0.8rem; color: var(--text-secondary);'>${donor.area}, ${donor.city} • Last Donated: ${donor.last_donated}</div>
+                </div>
+                <a href='tel:${donor.phone}' class='btn btn-emerald btn-sm'>📞 Call ${donor.phone}</a>
+              </div>
+            `).join('');
+          });
+        ">Search</button>
+      </div>
+
+      <div id="blood-donors-results" style="max-height: 250px; overflow-y: auto; margin-bottom: 1.5rem;">
+        <!-- Injected via JS -->
+      </div>
+
+      <hr style="border-color: var(--border-color); margin-bottom: 1rem;">
+      <h4 style="font-size: 1rem; margin-bottom: 0.75rem;">Register as a Voluntary Blood Donor</h4>
+      <form id="form-blood-donor">
+        <div class="form-row">
+          <input type="text" id="donor-name" class="form-control" placeholder="Your Name" required>
+          <select id="donor-bg" class="form-control" required>
+            <option value="A+">A+</option><option value="B+">B+</option>
+            <option value="O+">O+</option><option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+          </select>
+        </div>
+        <div class="form-row" style="margin-top: 0.5rem;">
+          <input type="text" id="donor-city" class="form-control" placeholder="City" required>
+          <input type="text" id="donor-area" class="form-control" placeholder="Area" required>
+        </div>
+        <div class="form-row" style="margin-top: 0.5rem;">
+          <input type="text" id="donor-phone" class="form-control" placeholder="Phone Number" required>
+          <input type="date" id="donor-last-donated" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 0.75rem;">Register as Donor</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 10. MEDICINE REMINDER MODAL -->
+  <div id="modal-reminder" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">💊 Add Medicine Reminder</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <form id="form-add-reminder">
+        <div class="form-group">
+          <label class="form-label">Medicine Name</label>
+          <input type="text" id="rem-med-name" class="form-control" placeholder="e.g. Tab. Amlodipine 5mg" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Dosage</label>
+            <input type="text" id="rem-dosage" class="form-control" placeholder="1 Tablet" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Alert Time</label>
+            <select id="rem-time" class="form-control">
+              <option value="08:00 AM">08:00 AM (Morning)</option>
+              <option value="02:00 PM">02:00 PM (Afternoon)</option>
+              <option value="09:00 PM">09:00 PM (Night)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Frequency</label>
+          <select id="rem-freq" class="form-control">
+            <option value="Daily">Daily</option>
+            <option value="Every 12 Hours">Every 12 Hours</option>
+            <option value="Weekly">Weekly</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-emerald" style="width: 100%;">Save Reminder & Enable Alerts</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 11. DOCTOR REVIEW MODAL -->
+  <div id="modal-review" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">⭐ Leave Doctor Review</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <form id="form-review">
+        <input type="hidden" id="review-doc-id">
+        <div class="form-group">
+          <label class="form-label">Rating (1 to 5 Stars)</label>
+          <select id="review-rating" class="form-control">
+            <option value="5">5 ★★★★★ (Excellent)</option>
+            <option value="4">4 ★★★★☆ (Good)</option>
+            <option value="3">3 ★★★☆☆ (Average)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Feedback / Review</label>
+          <textarea id="review-comment" class="form-control" rows="3" placeholder="Share your experience with the consultation..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 12. EMERGENCY HOTLINE MODAL -->
+  <div id="modal-emergency" class="modal-overlay">
+    <div class="modal-content" style="max-width: 450px; text-align: center;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--accent-rose);">🚨 24/7 Emergency Dispatch</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">If you are experiencing a life-threatening medical emergency, call our instant dispatch team immediately:</p>
+      
+      <div style="background: rgba(244, 63, 94, 0.15); border: 2px solid var(--accent-rose); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem;">
+        <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-rose);">NATIONAL EMERGENCY HEALTHLINE</div>
+        <a href="tel:999" style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); text-decoration: none;">📞 999</a>
+      </div>
+
+      <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem;">
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">Cardiac & ICU Ambulance Dispatch</div>
+        <a href="tel:+8801711000000" style="font-size: 1.2rem; font-weight: 700; color: var(--accent-blue); text-decoration: none;">+880 1711 000000</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating 24/7 Emergency Button -->
+  <button class="floating-emergency-btn" onclick="App.openModal('modal-emergency')">
+    🚨 24/7 Emergency
+  </button>
+
+  <!-- JavaScript Application Bundle -->
+  <script src="js/pdfGenerator.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/patientDashboard.js"></script>
+  <script src="js/doctorDashboard.js"></script>
+  <script src="js/adminDashboard.js"></script>
+  <script src="js/videoConsult.js"></script>
+  <script src="js/payment.js"></script>
+  <script src="js/medicineReminder.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
