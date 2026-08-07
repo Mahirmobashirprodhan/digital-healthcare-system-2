@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Digital Healthcare System – Smart Online Healthcare Platform</title>
-  <meta name="description" content="Comprehensive full-stack digital healthcare system providing online doctor appointments, WebRTC video consultation, lab test booking, home healthcare, blood donor bank, and digital prescriptions.">
-  
+  <meta name="description"
+    content="Comprehensive full-stack digital healthcare system providing online doctor appointments, WebRTC video consultation, lab test booking, home healthcare, blood donor bank, and digital prescriptions.">
+
   <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/consultation.css">
 </head>
+
 <body>
 
   <!-- Toast Notification Container -->
@@ -29,13 +32,17 @@
       <li><a class="nav-link" onclick="App.openModal('modal-blood-donor')">Blood Donors</a></li>
       <li><a class="nav-link" onclick="App.openModal('modal-home-service')">Home Care</a></li>
       <li><a class="nav-link" onclick="App.openModal('modal-contact')">Contact Us</a></li>
-      <li><a class="nav-link" id="nav-link-patient" style="display:none;" onclick="App.navigateTo('patient-dashboard')">My Dashboard</a></li>
-      <li><a class="nav-link" id="nav-link-doctor" style="display:none;" onclick="App.navigateTo('doctor-dashboard')">Doctor Portal</a></li>
-      <li><a class="nav-link" id="nav-link-admin" style="display:none;" onclick="App.navigateTo('admin-dashboard')">Admin Panel</a></li>
+      <li><a class="nav-link" id="nav-link-patient" style="display:none;"
+          onclick="App.navigateTo('patient-dashboard')">My Dashboard</a></li>
+      <li><a class="nav-link" id="nav-link-doctor" style="display:none;"
+          onclick="App.navigateTo('doctor-dashboard')">Doctor Portal</a></li>
+      <li><a class="nav-link" id="nav-link-admin" style="display:none;"
+          onclick="App.navigateTo('admin-dashboard')">Admin Panel</a></li>
     </ul>
 
     <div class="nav-actions">
-      <button class="btn btn-secondary btn-sm" onclick="App.toggleTheme()" title="Toggle Dark/Light Mode">🌙 / ☀️</button>
+      <button class="btn btn-secondary btn-sm" onclick="App.toggleTheme()" title="Toggle Dark/Light Mode">🌙 /
+        ☀️</button>
       <div id="nav-auth-container">
         <!-- Auth buttons injected by JS -->
       </div>
@@ -50,12 +57,15 @@
       <div class="hero">
         <div>
           <h1 class="hero-title">Smart Digital Healthcare <span class="gradient-text">For Everyone</span></h1>
-          <p class="hero-subtitle">Access world-class specialist doctors, book diagnostic lab tests, schedule home healthcare services, and manage your medical history securely from a single platform.</p>
-          
+          <p class="hero-subtitle">Access world-class specialist doctors, book diagnostic lab tests, schedule home
+            healthcare services, and manage your medical history securely from a single platform.</p>
+
           <div class="hero-actions">
             <button class="btn btn-primary" onclick="App.navigateTo('search')">🔍 Search Doctors & Book</button>
-            <button class="btn btn-emerald" onclick="App.openModal('modal-home-service')">🏠 Request Home Healthcare</button>
-            <button class="btn btn-secondary" onclick="App.openModal('modal-blood-donor')">🩸 Search Blood Donors</button>
+            <button class="btn btn-emerald" onclick="App.openModal('modal-home-service')">🏠 Request Home
+              Healthcare</button>
+            <button class="btn btn-secondary" onclick="App.openModal('modal-blood-donor')">🩸 Search Blood
+              Donors</button>
           </div>
 
           <div class="hero-stats">
@@ -75,7 +85,9 @@
         </div>
 
         <div>
-          <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80" alt="Digital Healthcare Telemedicine" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-glow); border: 1px solid var(--border-glow);">
+          <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80"
+            alt="Digital Healthcare Telemedicine"
+            style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-glow); border: 1px solid var(--border-glow);">
         </div>
       </div>
 
@@ -89,7 +101,8 @@
         <div class="service-card" onclick="App.navigateTo('search')">
           <div class="service-icon">👨‍⚕️</div>
           <h3>Doctor Teleconsultation</h3>
-          <p>Connect with top cardiologists, neurologists, pediatricians, and gynecologists via high-definition WebRTC video call.</p>
+          <p>Connect with top cardiologists, neurologists, pediatricians, and gynecologists via high-definition WebRTC
+            video call.</p>
         </div>
 
         <div class="service-card" onclick="App.openModal('modal-lab-booking')">
@@ -125,7 +138,8 @@
 
       <!-- Payment Partners Banner -->
       <div class="card-panel" style="text-align: center; background: var(--bg-card); padding: 2rem;">
-        <h3 style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem;">SECURE INTEGRATED PAYMENT GATEWAYS</h3>
+        <h3 style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem;">SECURE INTEGRATED PAYMENT
+          GATEWAYS</h3>
         <div style="display: flex; justify-content: center; align-items: center; gap: 2.5rem; flex-wrap: wrap;">
           <span style="font-weight: 800; font-size: 1.3rem; color: #0ea5e9;">SSLCommerz</span>
           <span style="font-weight: 800; font-size: 1.4rem; color: #e2136e;">bKash</span>
@@ -143,9 +157,11 @@
       </div>
 
       <div class="filter-bar">
-        <input type="text" id="filter-name" class="form-control" placeholder="Search doctor by name or hospital..." oninput="DoctorSearch.fetchDoctors({ name: this.value, department: document.getElementById('filter-dept').value })">
-        
-        <select id="filter-dept" class="form-control" onchange="DoctorSearch.fetchDoctors({ department: this.value, name: document.getElementById('filter-name').value })">
+        <input type="text" id="filter-name" class="form-control" placeholder="Search doctor by name or hospital..."
+          oninput="DoctorSearch.fetchDoctors({ name: this.value, department: document.getElementById('filter-dept').value })">
+
+        <select id="filter-dept" class="form-control"
+          onchange="DoctorSearch.fetchDoctors({ department: this.value, name: document.getElementById('filter-name').value })">
           <option value="">All Departments</option>
           <option value="Cardiology">Cardiology</option>
           <option value="Neurology">Neurology</option>
@@ -171,7 +187,8 @@
 
     <!-- 3. DOCTOR DETAIL VIEW -->
     <section id="view-doctor-detail" class="view-section">
-      <button class="btn btn-secondary btn-sm" onclick="App.navigateTo('search')" style="margin-bottom: 1.5rem;">← Back to Doctors List</button>
+      <button class="btn btn-secondary btn-sm" onclick="App.navigateTo('search')" style="margin-bottom: 1.5rem;">← Back
+        to Doctors List</button>
       <div id="doctor-detail-container">
         <!-- Injected via JS -->
       </div>
@@ -182,11 +199,14 @@
       <div class="dashboard-grid">
         <div class="dashboard-sidebar">
           <div class="user-profile-summary">
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Patient Avatar" class="avatar-lg">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80"
+              alt="Patient Avatar" class="avatar-lg">
             <h3 style="font-size: 1.2rem;" id="p-dash-name">Rahim Uddin</h3>
             <p style="font-size: 0.85rem; color: var(--accent-blue);">Patient Account</p>
-            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem;" id="p-dash-details">Blood Group: <strong style="color: var(--accent-rose);">A+</strong> | Age: 34</div>
-            <button class="btn btn-secondary btn-sm" onclick="App.openModal('modal-patient-profile')" style="margin-top: 0.75rem; width: 100%;">✏️ Edit Profile</button>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem;" id="p-dash-details">Blood
+              Group: <strong style="color: var(--accent-rose);">A+</strong> | Age: 34</div>
+            <button class="btn btn-secondary btn-sm" onclick="App.openModal('modal-patient-profile')"
+              style="margin-top: 0.75rem; width: 100%;">✏️ Edit Profile</button>
           </div>
 
           <ul class="sidebar-menu">
@@ -275,14 +295,17 @@
       <div class="dashboard-grid">
         <div class="dashboard-sidebar">
           <div class="user-profile-summary">
-            <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=200&q=80" alt="Doctor Avatar" class="avatar-lg">
+            <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=200&q=80"
+              alt="Doctor Avatar" class="avatar-lg">
             <h3 style="font-size: 1.2rem;">Dr. Anisur Rahman</h3>
             <p style="font-size: 0.85rem; color: var(--accent-blue);">Cardiology Specialist</p>
             <p style="font-size: 0.8rem; color: var(--text-secondary);">Square Hospital, Dhaka</p>
           </div>
 
-          <div style="background: rgba(14, 165, 233, 0.1); border: 1px solid var(--accent-blue); padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.8rem; color: var(--accent-blue);">
-            🔒 Privacy Access Control Enabled: You can access medical records ONLY for patients with confirmed or past consultations with you. All accesses are audited.
+          <div
+            style="background: rgba(14, 165, 233, 0.1); border: 1px solid var(--accent-blue); padding: 0.75rem; border-radius: var(--radius-md); font-size: 0.8rem; color: var(--accent-blue);">
+            🔒 Privacy Access Control Enabled: You can access medical records ONLY for patients with confirmed or past
+            consultations with you. All accesses are audited.
           </div>
         </div>
 
@@ -343,7 +366,8 @@
     <section id="view-admin-dashboard" class="view-section">
       <div class="section-header">
         <h2 class="section-title">System Control & Privacy Audit Panel</h2>
-        <p class="section-desc">Monitor healthcare statistics, manage system users, and track medical record privacy access logs.</p>
+        <p class="section-desc">Monitor healthcare statistics, manage system users, and track medical record privacy
+          access logs.</p>
       </div>
 
       <!-- Admin Overview Stats Cards -->
@@ -436,8 +460,10 @@
     <div class="modal-content">
       <div class="modal-header">
         <div style="display: flex; gap: 1rem;">
-          <button id="auth-tab-login" class="btn btn-secondary btn-sm active" onclick="App.openAuthModal('login')">Sign In</button>
-          <button id="auth-tab-register" class="btn btn-secondary btn-sm" onclick="App.openAuthModal('register')">Create Account</button>
+          <button id="auth-tab-login" class="btn btn-secondary btn-sm active" onclick="App.openAuthModal('login')">Sign
+            In</button>
+          <button id="auth-tab-register" class="btn btn-secondary btn-sm" onclick="App.openAuthModal('register')">Create
+            Account</button>
         </div>
         <button class="close-btn" onclick="App.closeModals()">✕</button>
       </div>
@@ -446,21 +472,25 @@
       <form id="form-login">
         <div class="form-group">
           <label class="form-label">Email Address</label>
-          <input type="email" id="login-email" class="form-control" placeholder="patient@demo.com or doctor@demo.com" required>
+          <input type="email" id="login-email" class="form-control" placeholder="patient@demo.com or doctor@demo.com"
+            required>
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
           <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-          <a onclick="App.openModal('modal-forgot-password'); App.closeModal('modal-auth')" style="font-size: 0.85rem; color: var(--accent-blue); cursor: pointer;">Forgot Password?</a>
+          <a onclick="App.openModal('modal-forgot-password'); App.closeModal('modal-auth')"
+            style="font-size: 0.85rem; color: var(--accent-blue); cursor: pointer;">Forgot Password?</a>
           <small style="color: var(--text-muted);">Demo Password: <strong>password123</strong></small>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
-        
+
         <div style="text-align: center; margin: 1rem 0 0.5rem; font-size: 0.85rem; color: var(--text-muted);">OR</div>
-        <button type="button" class="btn btn-secondary" onclick="Auth.loginGoogle()" style="width: 100%; font-size: 0.9rem;">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" style="width: 18px; margin-right: 0.5rem;"> Continue with Google
+        <button type="button" class="btn btn-secondary" onclick="Auth.loginGoogle()"
+          style="width: 100%; font-size: 0.9rem;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+            style="width: 18px; margin-right: 0.5rem;"> Continue with Google
         </button>
       </form>
 
@@ -503,10 +533,14 @@
             <div class="form-group">
               <label class="form-label">Blood Group</label>
               <select id="reg-blood-group" class="form-control">
-                <option value="A+">A+</option><option value="A-">A-</option>
-                <option value="B+">B+</option><option value="B-">B-</option>
-                <option value="O+">O+</option><option value="O-">O-</option>
-                <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
               </select>
             </div>
             <div class="form-group">
@@ -533,7 +567,8 @@
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Complete Registration</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Complete
+          Registration</button>
       </form>
     </div>
   </div>
@@ -616,7 +651,8 @@
 
       <form id="form-appointment-booking">
         <input type="hidden" id="booking-doc-id">
-        <div style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--border-glow);">
+        <div
+          style="background: var(--bg-primary); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--border-glow);">
           <strong style="font-size: 1.1rem; color: var(--accent-blue);" id="booking-doc-name">Doctor Name</strong>
           <div style="font-size: 0.9rem; color: var(--accent-emerald);" id="booking-doc-fee">৳1200</div>
         </div>
@@ -639,7 +675,8 @@
 
         <div class="form-group">
           <label class="form-label">Describe Symptoms or Medical Reason</label>
-          <textarea id="booking-symptoms" class="form-control" rows="3" placeholder="e.g. Chest tightness, blood pressure checkup..."></textarea>
+          <textarea id="booking-symptoms" class="form-control" rows="3"
+            placeholder="e.g. Chest tightness, blood pressure checkup..."></textarea>
         </div>
 
         <button type="submit" class="btn btn-primary" style="width: 100%;">Proceed to Payment & Confirm</button>
@@ -665,13 +702,15 @@
 
         <div class="form-group">
           <label class="form-label">Clinical Diagnosis</label>
-          <input type="text" id="rx-diagnosis" class="form-control" placeholder="e.g. Essential Hypertension Stage 1" required>
+          <input type="text" id="rx-diagnosis" class="form-control" placeholder="e.g. Essential Hypertension Stage 1"
+            required>
         </div>
 
         <div class="form-group">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
             <label class="form-label" style="margin:0;">Prescribed Medications (Rx)</label>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="DoctorDashboard.addMedicineRow()">+ Add Medicine</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="DoctorDashboard.addMedicineRow()">+ Add
+              Medicine</button>
           </div>
           <div id="rx-medicines-container">
             <!-- Dynamic Medicine Rows -->
@@ -680,7 +719,8 @@
 
         <div class="form-group">
           <label class="form-label">Doctor Advice & Lifestyle Instructions</label>
-          <textarea id="rx-instructions" class="form-control" rows="3" placeholder="e.g. Low sodium diet, 30 mins daily walk, recheck BP after 3 weeks."></textarea>
+          <textarea id="rx-instructions" class="form-control" rows="3"
+            placeholder="e.g. Low sodium diet, 30 mins daily walk, recheck BP after 3 weeks."></textarea>
         </div>
 
         <button type="submit" class="btn btn-emerald" style="width: 100%;">Sign & Issue Digital Prescription</button>
@@ -707,7 +747,8 @@
       <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
         <div>
           <h3 class="modal-title" style="color: #fff;">🎥 Real-Time WebRTC Video Consultation</h3>
-          <span style="font-size: 0.85rem; color: var(--accent-blue);">Connected with <span id="webrtc-peer-name">Doctor/Patient</span> (<span id="webrtc-peer-role">Role</span>)</span>
+          <span style="font-size: 0.85rem; color: var(--accent-blue);">Connected with <span
+              id="webrtc-peer-name">Doctor/Patient</span> (<span id="webrtc-peer-role">Role</span>)</span>
         </div>
         <button class="close-btn" onclick="VideoConsult.endCall()">✕</button>
       </div>
@@ -721,7 +762,8 @@
 
           <div class="remote-video-screen">
             <div class="remote-avatar-placeholder">
-              <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=300&q=80" alt="Consultant Video Stream">
+              <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=300&q=80"
+                alt="Consultant Video Stream">
               <p style="color: #fff; font-weight: 600;">Encrypted HD Video Feed</p>
             </div>
           </div>
@@ -731,15 +773,19 @@
           </div>
 
           <div class="call-controls-bar">
-            <button class="control-btn" id="btn-toggle-mic" onclick="VideoConsult.toggleAudio()" title="Mute/Unmute Mic">🎙️</button>
-            <button class="control-btn" id="btn-toggle-cam" onclick="VideoConsult.toggleVideo()" title="Turn Camera On/Off">📷</button>
+            <button class="control-btn" id="btn-toggle-mic" onclick="VideoConsult.toggleAudio()"
+              title="Mute/Unmute Mic">🎙️</button>
+            <button class="control-btn" id="btn-toggle-cam" onclick="VideoConsult.toggleVideo()"
+              title="Turn Camera On/Off">📷</button>
             <button class="control-btn btn-hangup" onclick="VideoConsult.endCall()" title="End Consultation">📞</button>
           </div>
         </div>
 
         <div class="consultation-side-drawer">
           <h4 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-primary);">Clinical Live Notes</h4>
-          <textarea class="form-control" rows="12" placeholder="Write consultation observations, patient symptoms, or real-time notes here..." style="font-size: 0.85rem; height: 100%; resize: none;"></textarea>
+          <textarea class="form-control" rows="12"
+            placeholder="Write consultation observations, patient symptoms, or real-time notes here..."
+            style="font-size: 0.85rem; height: 100%; resize: none;"></textarea>
         </div>
       </div>
     </div>
@@ -755,23 +801,29 @@
 
       <div style="text-align: center; margin-bottom: 1.5rem;">
         <div style="font-size: 0.9rem; color: var(--text-secondary);">Total Payable Amount</div>
-        <div style="font-size: 2.2rem; font-weight: 800; color: var(--accent-emerald);" id="payment-amount-display">৳1200</div>
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--accent-emerald);" id="payment-amount-display">
+          ৳1200</div>
       </div>
 
       <!-- Step 1: Select Gateway -->
       <div id="payment-step-gateway">
         <label class="form-label" style="margin-bottom: 0.75rem;">Select Payment Method</label>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('bKash')" style="border-color: #e2136e; color: #e2136e; font-size: 1.1rem; font-weight: 800;">bKash</button>
-          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Nagad')" style="border-color: #f7921e; color: #f7921e; font-size: 1.1rem; font-weight: 800;">Nagad</button>
-          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Rocket')" style="border-color: #8c3494; color: #8c3494; font-size: 1.1rem; font-weight: 800;">Rocket</button>
-          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('SSLCommerz')" style="border-color: #0ea5e9; color: #0ea5e9; font-size: 1rem; font-weight: 800;">SSLCommerz</button>
+          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('bKash')"
+            style="border-color: #e2136e; color: #e2136e; font-size: 1.1rem; font-weight: 800;">bKash</button>
+          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Nagad')"
+            style="border-color: #f7921e; color: #f7921e; font-size: 1.1rem; font-weight: 800;">Nagad</button>
+          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Rocket')"
+            style="border-color: #8c3494; color: #8c3494; font-size: 1.1rem; font-weight: 800;">Rocket</button>
+          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('SSLCommerz')"
+            style="border-color: #0ea5e9; color: #0ea5e9; font-size: 1rem; font-weight: 800;">SSLCommerz</button>
         </div>
       </div>
 
       <!-- Step 2: Verification PIN/OTP -->
       <div id="payment-step-otp" style="display: none;">
-        <div style="background: var(--bg-primary); padding: 0.75rem; border-radius: var(--radius-md); margin-bottom: 1rem; text-align: center;">
+        <div
+          style="background: var(--bg-primary); padding: 0.75rem; border-radius: var(--radius-md); margin-bottom: 1rem; text-align: center;">
           Selected Gateway: <strong id="payment-gateway-brand">bKash</strong>
         </div>
         <form onsubmit="PaymentSystem.confirmPayment(event)">
@@ -824,7 +876,8 @@
 
         <div class="form-group">
           <label class="form-label">Collection Address</label>
-          <input type="text" id="lab-booking-address" class="form-control" placeholder="House/Road, Area, City" required>
+          <input type="text" id="lab-booking-address" class="form-control" placeholder="House/Road, Area, City"
+            required>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
@@ -868,7 +921,8 @@
 
         <div class="form-group">
           <label class="form-label">Detailed Address</label>
-          <textarea id="hs-address" class="form-control" rows="2" placeholder="Full house address, flat no, landmark..." required></textarea>
+          <textarea id="hs-address" class="form-control" rows="2" placeholder="Full house address, flat no, landmark..."
+            required></textarea>
         </div>
 
         <button type="submit" class="btn btn-emerald" style="width: 100%;">Submit Request</button>
@@ -887,10 +941,14 @@
       <div class="filter-bar" style="grid-template-columns: 1fr 1fr auto;">
         <select id="bd-search-group" class="form-control">
           <option value="">All Blood Groups</option>
-          <option value="A+">A+</option><option value="A-">A-</option>
-          <option value="B+">B+</option><option value="B-">B-</option>
-          <option value="O+">O+</option><option value="O-">O-</option>
-          <option value="AB+">AB+</option><option value="AB-">AB-</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
         </select>
         <input type="text" id="bd-search-city" class="form-control" placeholder="City or Area (e.g. Dhanmondi)">
         <button class="btn btn-primary btn-sm" onclick="
@@ -921,8 +979,10 @@
         <div class="form-row">
           <input type="text" id="donor-name" class="form-control" placeholder="Your Name" required>
           <select id="donor-bg" class="form-control" required>
-            <option value="A+">A+</option><option value="B+">B+</option>
-            <option value="O+">O+</option><option value="O-">O-</option>
+            <option value="A+">A+</option>
+            <option value="B+">B+</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
             <option value="AB+">AB+</option>
           </select>
         </div>
@@ -934,7 +994,8 @@
           <input type="text" id="donor-phone" class="form-control" placeholder="Phone Number" required>
           <input type="date" id="donor-last-donated" class="form-control">
         </div>
-        <button type="submit" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 0.75rem;">Register as Donor</button>
+        <button type="submit" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 0.75rem;">Register as
+          Donor</button>
       </form>
     </div>
   </div>
@@ -997,7 +1058,8 @@
         </div>
         <div class="form-group">
           <label class="form-label">Your Feedback / Review</label>
-          <textarea id="review-comment" class="form-control" rows="3" placeholder="Share your experience with the consultation..." required></textarea>
+          <textarea id="review-comment" class="form-control" rows="3"
+            placeholder="Share your experience with the consultation..." required></textarea>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
       </form>
@@ -1011,16 +1073,22 @@
         <h3 class="modal-title" style="color: var(--accent-rose);">🚨 24/7 Emergency Dispatch</h3>
         <button class="close-btn" onclick="App.closeModals()">✕</button>
       </div>
-      <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">If you are experiencing a life-threatening medical emergency, call our instant dispatch team immediately:</p>
-      
-      <div style="background: rgba(244, 63, 94, 0.15); border: 2px solid var(--accent-rose); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem;">
+      <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">If you are experiencing a life-threatening medical
+        emergency, call our instant dispatch team immediately:</p>
+
+      <div
+        style="background: rgba(244, 63, 94, 0.15); border: 2px solid var(--accent-rose); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem;">
         <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-rose);">NATIONAL EMERGENCY HEALTHLINE</div>
-        <a href="tel:999" style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); text-decoration: none;">📞 999</a>
+        <a href="tel:999"
+          style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); text-decoration: none;">📞 999</a>
       </div>
 
-      <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem;">
+      <div
+        style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem;">
         <div style="font-size: 0.85rem; color: var(--text-secondary);">Cardiac & ICU Ambulance Dispatch</div>
-        <a href="tel:+8801711000000" style="font-size: 1.2rem; font-weight: 700; color: var(--accent-blue); text-decoration: none;">+880 1711 000000</a>
+        <a href="tel:+8801711000000"
+          style="font-size: 1.2rem; font-weight: 700; color: var(--accent-blue); text-decoration: none;">+880 1711
+          000000</a>
       </div>
     </div>
   </div>
@@ -1043,4 +1111,5 @@
   <script src="js/app.js"></script>
 
 </body>
+
 </html>
