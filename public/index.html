@@ -547,11 +547,11 @@
       </div>
       <form onsubmit="
         event.preventDefault();
-        const email = document.getElementById('reset-email').value;
+        const resetEmail = document.getElementById('reset-email').value;
         fetch('/api/auth/forgot-password', {
           method: 'POST',
           headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({email})
+          body: JSON.stringify({email: resetEmail})
         }).then(r => r.json()).then(d => {
           App.showToast(d.message || 'Password reset email sent!', 'info');
           App.closeModals();
@@ -576,12 +576,12 @@
       <form onsubmit="
         event.preventDefault();
         const name = document.getElementById('c-name').value;
-        const email = document.getElementById('c-email').value;
+        const contactEmail = document.getElementById('c-email').value;
         const message = document.getElementById('c-msg').value;
         fetch('/api/contact', {
           method: 'POST',
           headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({name, email, message})
+          body: JSON.stringify({name, email: contactEmail, message})
         }).then(r => r.json()).then(d => {
           App.showToast(d.message, 'success');
           App.closeModals();
