@@ -388,6 +388,22 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                     cursor.execute("SELECT id, name, email, role, phone, is_verified, created_at FROM users ORDER BY created_at DESC")
                     return self.send_json({"users": [dict(r) for r in cursor.fetchall()]})
 
+                elif path == '/api/admin/appointments':
+                    user = self.get_auth_user()
+                    if not user or user['role'] != 'admin':
+                        return self.send_error_json("Admin access required", 403)
+                    cursor.execute("""
+                    SELECT a.id, a.date, a.time_slot, a.status, a.fee, a.payment_status, a.symptoms,
+                           pu.name as patient_name, pu.email as patient_email,
+                           du.name as doctor_name, d.specialization
+                    FROM appointments a
+                    JOIN users pu ON a.patient_id = pu.id
+                    JOIN doctors d ON a.doctor_id = d.id
+                    JOIN users du ON d.user_id = du.id
+                    ORDER BY a.date DESC, a.time_slot ASC
+                    """)
+                    return self.send_json({"appointments": [dict(r) for r in cursor.fetchall()]})
+
                 else:
                     return self.send_error_json("Endpoint not found", 404)
 
@@ -546,10 +562,16 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                     appt_id = cursor.lastrowid
 
                     # Add notification for patient
-                    cursor.execute("INSERT INTO notifications (user_id, title, message, type) VALUES (?, 'Appointment Submitted', ?, 'appointment')", (user['user_id'], f"Your appointment request for {date} at {time_slot} has been submitted."))
-                    conn.commit()
+                    cursor.execute("INSERT INTO notifications (user_id, title, message, type) VALUES (?, 'Appointment Request Sent', ?, 'appointment')", (user['user_id'], f"Your appointment request for {date} at {time_slot} has been sent to the doctor."))
 
-                    return self.send_json({"message": "Appointment booked successfully!", "appointment_id": appt_id}, 201)
+                    # Add notification for doctor
+                    cursor.execute("SELECT user_id FROM doctors WHERE id=?", (doctor_id,))
+                    doc_user = cursor.fetchone()
+                    if doc_user:
+                        cursor.execute("INSERT INTO notifications (user_id, title, message, type) VALUES (?, 'New Patient Request', ?, 'appointment')", (doc_user['user_id'], f"New appointment request from {user['name']} for {date} at {time_slot}. Please accept or reject."))
+
+                    conn.commit()
+                    return self.send_json({"message": "Appointment request submitted successfully! Waiting for doctor confirmation.", "appointment_id": appt_id}, 201)
 
                 # 6. Write Prescription (Doctor only)
                 elif path == '/api/prescriptions':
@@ -737,7 +759,7 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
             conn = get_db()
             cursor = conn.cursor()
             try:
-                # Update Appointment Status
+                # Update Appointment Status (Doctor Accept / Reject / Cancel / Complete)
                 if path.startswith('/api/appointments/') and path.endswith('/status'):
                     appt_id = path.split('/')[-2]
                     status = body.get('status')
@@ -745,20 +767,32 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                     if not user or user['role'] not in ['doctor', 'admin', 'patient']:
                         return self.send_error_json("Permission denied", 403)
 
+                    cursor.execute("""
+                    SELECT a.*, pu.name as patient_name, du.name as doctor_name
+                    FROM appointments a
+                    JOIN users pu ON a.patient_id = pu.id
+                    JOIN doctors d ON a.doctor_id = d.id
+                    JOIN users du ON d.user_id = du.id
+                    WHERE a.id=?
+                    """, (appt_id,))
+                    appt = cursor.fetchone()
+                    if not appt:
+                        return self.send_error_json("Appointment not found", 404)
+
                     cursor.execute("UPDATE appointments SET status=? WHERE id=?", (status, appt_id))
 
-                    # Auto-refund when cancelled or rejected
-                    if status in ('Cancelled', 'Rejected'):
-                        cursor.execute(
-                            "SELECT payment_status, fee, patient_id FROM appointments WHERE id=?",
-                            (appt_id,)
-                        )
-                        appt = cursor.fetchone()
-                        if appt and appt['payment_status'] == 'Paid':
-                            cursor.execute(
-                                "UPDATE appointments SET payment_status='Refunded' WHERE id=?",
-                                (appt_id,)
-                            )
+                    # Notification when Doctor Accepts
+                    if status == 'Confirmed':
+                        cursor.execute("""
+                        INSERT INTO notifications (user_id, title, message, type)
+                        VALUES (?, 'Appointment Accepted! 🎉', ?, 'appointment')
+                        """, (appt['patient_id'], f"Dr. {appt['doctor_name']} has accepted your appointment for {appt['date']} at {appt['time_slot']}."))
+
+                    # Notification & Auto-refund when Doctor or Patient Cancels / Rejects
+                    elif status in ('Cancelled', 'Rejected'):
+                        action_word = 'declined by the doctor' if status == 'Rejected' else 'cancelled'
+                        if appt['payment_status'] == 'Paid':
+                            cursor.execute("UPDATE appointments SET payment_status='Refunded' WHERE id=?", (appt_id,))
                             import uuid
                             refund_txn = 'REFUND-' + str(uuid.uuid4())[:8].upper()
                             cursor.execute(
@@ -769,14 +803,22 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                             )
                             cursor.execute(
                                 """INSERT INTO notifications (user_id, title, message, type)
-                                   VALUES (?, 'Refund Processed',
-                                   'Your payment of ৳' || ? || ' for appointment #' || ? || ' has been refunded. TRX: ' || ?,
-                                   'refund')""",
-                                (appt['patient_id'], appt['fee'], appt_id, refund_txn)
+                                   VALUES (?, ?, ?, 'refund')""",
+                                (appt['patient_id'],
+                                 f"Appointment {status}: Refund Processed",
+                                 f"Your appointment with Dr. {appt['doctor_name']} on {appt['date']} was {action_word}. Full refund of ৳{appt['fee']} has been processed. TRX: {refund_txn}")
+                            )
+                        else:
+                            cursor.execute(
+                                """INSERT INTO notifications (user_id, title, message, type)
+                                   VALUES (?, ?, ?, 'appointment')""",
+                                (appt['patient_id'],
+                                 f"Appointment {status}",
+                                 f"Your appointment with Dr. {appt['doctor_name']} on {appt['date']} was {action_word}.")
                             )
 
                     conn.commit()
-                    return self.send_json({"message": f"Appointment status updated to {status}"})
+                    return self.send_json({"message": f"Appointment request has been {status.lower()}."})
 
                 # Cancel Appointment
                 elif path.startswith('/api/appointments/') and path.endswith('/cancel'):
@@ -954,6 +996,10 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                     conn.commit()
                     return self.send_json({"message": "Patient profile updated successfully!"})
 
+                # Clinical Data Immutability Guard: Medical records & prescriptions cannot be altered
+                elif path.startswith('/api/medical-records') or path.startswith('/api/prescriptions') or path.startswith('/api/labs/reports'):
+                    return self.send_error_json("Clinical Data Protection: Patient medical records, lab reports, and prescriptions are immutable and cannot be altered.", 403)
+
                 else:
                     return self.send_error_json("PUT route not found", 404)
             finally:
@@ -962,6 +1008,11 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
     def do_DELETE(self):
         parsed_url = urllib.parse.urlparse(self.path)
         path = parsed_url.path
+
+        # Clinical Data Immutability Guard: Medical records & prescriptions cannot be deleted
+        if path.startswith('/api/medical-records') or path.startswith('/api/prescriptions') or path.startswith('/api/labs/reports'):
+            return self.send_error_json("Clinical Data Protection: Patient medical records, lab reports, and prescriptions are permanent legal healthcare records and cannot be deleted.", 403)
+
         if path.startswith('/api/reminders/'):
             rem_id = path.split('/')[-1]
             user = self.get_auth_user()
@@ -973,6 +1024,8 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
             conn.commit()
             conn.close()
             return self.send_json({"message": "Reminder deleted."})
+
+        return self.send_error_json("DELETE route not found", 404)
 
 def run_server():
     init_db()

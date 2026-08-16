@@ -435,6 +435,17 @@
         </div>
       </div>
 
+      <!-- Healthcare Privacy & Clinical Immutability Compliance Notice -->
+      <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid var(--accent-blue); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1rem;">
+        <span style="font-size: 1.5rem;">🔒</span>
+        <div>
+          <strong style="color: var(--accent-blue); font-size: 0.95rem;">Healthcare Compliance & Patient Data Protection</strong>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0.25rem 0 0; line-height: 1.4;">
+            As an Administrator, you have full oversight of registered users, platform appointments, system revenue, and security audit logs. In accordance with medical ethics and privacy regulations, <strong>patient medical records, diagnostic lab reports, and doctor prescriptions are tamper-proof and cannot be edited or deleted by administrators.</strong>
+          </p>
+        </div>
+      </div>
+
       <!-- Medical Record Privacy Audit Log Table -->
       <div class="card-panel">
         <h3 class="panel-title" style="margin-bottom: 1rem;">🛡️ Medical Records Security Access Audit Trail</h3>
@@ -450,6 +461,29 @@
               </tr>
             </thead>
             <tbody id="admin-audit-logs-list">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- System-wide Appointments Table -->
+      <div class="card-panel">
+        <h3 class="panel-title" style="margin-bottom: 1rem;">📅 All Platform Appointments</h3>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Schedule</th>
+                <th>Fee</th>
+                <th>Status</th>
+                <th>Payment</th>
+              </tr>
+            </thead>
+            <tbody id="admin-appointments-list">
               <!-- Injected via JS -->
             </tbody>
           </table>
@@ -529,8 +563,12 @@
         <div class="form-group">
           <label class="form-label">Account Role</label>
           <select id="reg-role" class="form-control" onchange="
-            document.getElementById('patient-fields').style.display = this.value === 'patient' ? 'block' : 'none';
-            document.getElementById('doctor-fields').style.display = this.value === 'doctor' ? 'block' : 'none';
+            const isDoc = this.value === 'doctor';
+            document.getElementById('patient-fields').style.display = isDoc ? 'none' : 'block';
+            document.getElementById('doctor-fields').style.display = isDoc ? 'block' : 'none';
+            document.getElementById('reg-name-label').textContent = isDoc ? 'Doctor Display Name (Display on Profile & Prescriptions)' : 'Full Name';
+            document.getElementById('reg-name').placeholder = isDoc ? 'e.g. Dr. Mahir Mobashir' : 'e.g. Rahim Uddin';
+            document.getElementById('reg-name-hint').style.display = isDoc ? 'block' : 'none';
           ">
             <option value="patient">Patient Account</option>
             <option value="doctor">Doctor Account</option>
@@ -539,8 +577,11 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Full Name</label>
+            <label class="form-label" id="reg-name-label">Full Name</label>
             <input type="text" id="reg-name" class="form-control" placeholder="e.g. Rahim Uddin" required>
+            <small id="reg-name-hint" style="display:none; color: var(--accent-blue); font-size: 0.78rem; margin-top: 0.3rem;">
+              ℹ️ This name will be displayed on your public doctor profile, doctor directory, and prescription headers.
+            </small>
           </div>
           <div class="form-group">
             <label class="form-label">Phone Number</label>
