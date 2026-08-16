@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Care & Nursing Services – DigitalCare.bd</title>
+  <meta name="description"
+    content="Book certified home healthcare services in Bangladesh: home sample collection, 24/7 nursing care, elderly assistance, physiotherapy, and doctor home visits.">
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/consultation.css">
+</head>
+
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="brand-logo" onclick="window.location.href='/'">
+      <div class="brand-icon">✚</div>
+      <span>DigitalCare<span style="color: var(--accent-blue);">.bd</span></span>
+    </div>
+
+    <button class="nav-toggle-btn" id="nav-toggle-btn" aria-label="Toggle navigation">☰</button>
+
+    <ul class="nav-links" id="nav-links">
+      <li><a class="nav-link" id="nav-link-home" href="/">Home</a></li>
+      <li><a class="nav-link" id="nav-link-search" href="/#search">Find Doctors</a></li>
+      <li><a class="nav-link" id="nav-link-blood-donors" href="/blood-donors">Blood Donors</a></li>
+      <li><a class="nav-link active" id="nav-link-home-care" href="/home-care">Home Care</a></li>
+      <li><a class="nav-link" onclick="App.openModal('modal-contact')">Contact Us</a></li>
+      <li><a class="nav-link" id="nav-link-patient" style="display:none;"
+          onclick="App.navigateTo('patient-dashboard')">My Dashboard</a></li>
+      <li><a class="nav-link" id="nav-link-doctor" style="display:none;"
+          onclick="App.navigateTo('doctor-dashboard')">Doctor Portal</a></li>
+      <li><a class="nav-link" id="nav-link-admin" style="display:none;"
+          onclick="App.navigateTo('admin-dashboard')">Admin Panel</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <button class="btn btn-secondary btn-sm" onclick="App.toggleTheme()" title="Toggle Dark/Light Mode">🌙 /
+        ☀️</button>
+      <div id="nav-auth-container">
+        <!-- Auth buttons injected by JS -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    
+    <!-- Hero Section -->
+    <div class="page-hero">
+      <div style="max-width: 800px;">
+        <span class="badge badge-active" style="margin-bottom: 0.75rem; font-size: 0.85rem;">🏠 Certified Home Healthcare</span>
+        <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">
+          Professional Healthcare At Your Doorstep
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 1.5rem; line-height: 1.7;">
+          Skip hospital queues and receive compassionate, expert medical care in the comfort of your home. From lab sample collection to 24/7 nursing and elderly care.
+        </p>
+
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+          <a href="#request-section" class="btn btn-emerald" style="font-size: 1rem; padding: 0.75rem 1.5rem;">
+            📝 Request Home Care Service
+          </a>
+          <a href="#services-grid-section" class="btn btn-secondary" style="font-size: 1rem; padding: 0.75rem 1.5rem;">
+            📋 Explore Services
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Services Grid Section -->
+    <div id="services-grid-section" style="margin-bottom: 3rem;">
+      <div class="section-header">
+        <h2 class="section-title">Our Home Healthcare Services</h2>
+        <p class="section-desc">Tailored medical solutions delivered directly to your home by verified healthcare professionals.</p>
+      </div>
+
+      <div class="services-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+        <div class="home-care-card">
+          <div class="service-icon" style="font-size: 2.5rem; margin-bottom: 1rem;">🧪</div>
+          <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Home Sample Collection</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6;">
+            Certified phlebotomists collect blood, urine, or swab samples from your residence and deliver digital test reports directly.
+          </p>
+          <span class="badge badge-active">Available Daily</span>
+        </div>
+
+        <div class="home-care-card">
+          <div class="service-icon" style="font-size: 2.5rem; margin-bottom: 1rem;">👩‍⚕️</div>
+          <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Qualified Nurse Home Care</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6;">
+            Registered nurses for IV injections, catheter management, wound dressing, post-surgical recovery, and vitals monitoring.
+          </p>
+          <span class="badge badge-active">12h / 24h Shifts</span>
+        </div>
+
+        <div class="home-care-card">
+          <div class="service-icon" style="font-size: 2.5rem; margin-bottom: 1rem;">👵</div>
+          <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Elderly & Caregiver Support</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6;">
+            Dedicated trained caregivers assisting elderly family members with daily living, hygiene, mobility, and medication reminders.
+          </p>
+          <span class="badge badge-active">Dedicated Staff</span>
+        </div>
+
+        <div class="home-care-card">
+          <div class="service-icon" style="font-size: 2.5rem; margin-bottom: 1rem;">🧘‍♂️</div>
+          <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Physiotherapy Session</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6;">
+            Professional physiotherapists provide stroke rehabilitation, joint mobilization, paralysis exercise, and pain management.
+          </p>
+          <span class="badge badge-active">60 Min Sessions</span>
+        </div>
+
+        <div class="home-care-card">
+          <div class="service-icon" style="font-size: 2.5rem; margin-bottom: 1rem;">🩺</div>
+          <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Specialist Doctor Visit</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6;">
+            Schedule an in-person home consultation with experienced general physicians or geriatric specialists for bedridden patients.
+          </p>
+          <span class="badge badge-active">On Appointment</span>
+        </div>
+
+        <div class="home-care-card">
+          <div class="service-icon" style="font-size: 2.5rem; margin-bottom: 1rem;">🩹</div>
+          <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">Post-Operative Wound Care</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem; line-height: 1.6;">
+            Sterile suture removal, burn dressing, diabetic foot ulcer care, and infection management by clinical specialists.
+          </p>
+          <span class="badge badge-active">Sterile Protocol</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Request Form & User History Section -->
+    <div id="request-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;" class="form-row">
+      
+      <!-- Interactive Request Form -->
+      <div class="card-panel">
+        <h2 style="font-size: 1.3rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          🏠 Request Home Healthcare Service
+        </h2>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Fill out the form below. Our care coordinator will confirm your schedule within 15 minutes.
+        </p>
+
+        <form id="page-form-home-service">
+          <div class="form-group">
+            <label class="form-label">Select Home Healthcare Service *</label>
+            <select id="page-hs-service-type" class="form-control" required>
+              <option value="Home Sample Collection">Blood & Urine Sample Collection at Home</option>
+              <option value="Home Nursing Care">Qualified Nurse Home Care (12h / 24h Shift)</option>
+              <option value="Elderly & Caregiver Support">Elderly Caregiver & Medication Assistance</option>
+              <option value="Physiotherapy Session">Physical Therapy & Rehabilitation Session</option>
+              <option value="Specialist Doctor Visit">Specialist Doctor Home Visit</option>
+              <option value="Post-Operative Wound Care">Post-Operative Wound Care & Dressing</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Preferred Date *</label>
+              <input type="date" id="page-hs-date" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contact Phone *</label>
+              <input type="text" id="page-hs-phone" class="form-control" placeholder="+8801712345678" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Detailed Address *</label>
+            <textarea id="page-hs-address" class="form-control" rows="2" placeholder="Full house address, flat no, road no, landmark..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Special Notes / Medical Condition (Optional)</label>
+            <textarea id="page-hs-notes" class="form-control" rows="2" placeholder="Describe patient symptoms, age, or special equipment required..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-emerald" style="width: 100%; font-size: 1rem; padding: 0.85rem;">
+            🚀 Submit Home Healthcare Request
+          </button>
+        </form>
+      </div>
+
+      <!-- History & Service Benefits -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- User Request History Card -->
+        <div class="card-panel">
+          <h3 style="font-size: 1.15rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
+            <span>📋 My Recent Home Care Requests</span>
+            <button class="btn btn-secondary btn-sm" onclick="HomeCarePage.loadUserRequests()">🔄 Refresh</button>
+          </h3>
+
+          <div id="page-home-requests-list">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Sign in to view your submitted home healthcare requests and live status updates.</p>
+          </div>
+        </div>
+
+        <!-- Quality & Safety Guarantee -->
+        <div class="card-panel" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25);">
+          <h3 style="color: var(--accent-emerald); font-size: 1.15rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            🛡️ Safety & Quality Guarantee
+          </h3>
+          <ul style="list-style-type: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem; color: var(--text-secondary);">
+            <li style="display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-emerald);">✔</span>
+              <span>100% Background-verified & BMDC certified medical personnel.</span>
+            </li>
+            <li style="display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-emerald);">✔</span>
+              <span>Strict PPE, sanitization, and sterile equipment protocols.</span>
+            </li>
+            <li style="display: flex; gap: 0.5rem;">
+              <span style="color: var(--accent-emerald);">✔</span>
+              <span>Transparent pricing with no hidden charges.</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Modals -->
+  <!-- Auth Modal -->
+  <div id="modal-auth" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="auth-modal-title">🔐 Patient & Doctor Access</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="auth-tab-login" onclick="App.openAuthModal('login')">Log In</div>
+        <div class="auth-tab" id="auth-tab-register" onclick="App.openAuthModal('register')">Create Account</div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="login-email" class="form-control" placeholder="user@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="form-register" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Account Role</label>
+          <select id="reg-role" class="form-control">
+            <option value="patient">Patient Account</option>
+            <option value="doctor">Doctor Account</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="reg-name" class="form-control" placeholder="Dr. John Doe / Rahat Ali" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="reg-email" class="form-control" placeholder="name@domain.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="text" id="reg-phone" class="form-control" placeholder="+8801700000000" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="reg-password" class="form-control" placeholder="At least 6 chars" required>
+        </div>
+        <button type="submit" class="btn btn-emerald" style="width: 100%;">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Contact Us Modal -->
+  <div id="modal-contact" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">💬 Contact Healthcare Support</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <form id="form-contact">
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input type="text" id="contact-name" class="form-control" placeholder="Your name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="contact-email" class="form-control" placeholder="name@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea id="contact-message" class="form-control" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Emergency Modal -->
+  <div id="modal-emergency" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px; text-align: center;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--accent-rose);">🚨 Emergency Ambulance Dispatch</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+        Instant hotline to emergency dispatchers, cardiac support, and fast ICU ambulance service.
+      </p>
+      <div style="background: rgba(244, 63, 94, 0.15); border: 2px solid var(--accent-rose); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem;">
+        <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-rose);">NATIONAL EMERGENCY HEALTHLINE</div>
+        <a href="tel:999" style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); text-decoration: none;">📞 999</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating 24/7 Emergency Button -->
+  <button class="floating-emergency-btn" onclick="App.openModal('modal-emergency')">
+    🚨 24/7 Emergency
+  </button>
+
+  <!-- JavaScript Application Bundle -->
+  <script src="js/pdfGenerator.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/patientDashboard.js"></script>
+  <script src="js/doctorDashboard.js"></script>
+  <script src="js/adminDashboard.js"></script>
+  <script src="js/videoConsult.js"></script>
+  <script src="js/payment.js"></script>
+  <script src="js/medicineReminder.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+
+</html>

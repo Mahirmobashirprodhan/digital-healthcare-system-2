@@ -58,6 +58,9 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
             path = '/index.html'
         
         file_path = os.path.normpath(os.path.join(PUBLIC_DIR, path.lstrip('/')))
+        if not os.path.exists(file_path) and os.path.exists(file_path + '.html'):
+            file_path = file_path + '.html'
+
         if not file_path.startswith(PUBLIC_DIR) or not os.path.exists(file_path) or os.path.isdir(file_path):
             self.send_response(404)
             self.end_headers()
@@ -436,7 +439,7 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                         cursor.execute("""
                         INSERT INTO doctors (user_id, specialization, hospital, qualification, experience_years, fee, available_days, available_time, about)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (user_id, body.get('specialization', 'General Medicine'), body.get('hospital', 'Dhaka Medical'), body.get('qualification', 'MBBS'), body.get('experience_years', 5), body.get('fee', 1000.0), json.dumps(["Mon", "Wed", "Fri"]), "10:00 AM - 04:00 PM", body.get('about', 'Specialist Doctor')))
+                        """, (user_id, body.get('specialization', 'General Physician'), body.get('hospital', 'Not specified'), body.get('qualification', 'MBBS'), body.get('experience_years', 5), body.get('fee', 1000.0), json.dumps(body.get('available_days', ["Mon", "Wed", "Fri"])), body.get('available_time', "10:00 AM - 04:00 PM"), body.get('about', 'Specialist Doctor')))
 
                     conn.commit()
 
@@ -446,6 +449,30 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                         "token": token,
                         "user": {"id": user_id, "name": name, "email": email, "role": role}
                     }, 201)
+
+                elif path == '/api/auth/upgrade-doctor':
+                    user = self.get_auth_user()
+                    if not user:
+                        return self.send_error_json("Unauthorized", 401)
+                    
+                    user_id = user['user_id']
+                    cursor.execute("UPDATE users SET role='doctor' WHERE id=?", (user_id,))
+                    cursor.execute("SELECT id FROM doctors WHERE user_id=?", (user_id,))
+                    if not cursor.fetchone():
+                        cursor.execute("""
+                        INSERT INTO doctors (user_id, specialization, hospital, qualification, experience_years, fee, available_days, available_time, about)
+                        VALUES (?, 'General Physician', 'Not specified', 'MBBS', 5, 1000.0, ?, '10:00 AM - 04:00 PM', 'Specialist Doctor')
+                        """, (user_id, json.dumps(["Mon", "Wed", "Fri"])))
+                    conn.commit()
+                    
+                    cursor.execute("SELECT id, name, email, role FROM users WHERE id=?", (user_id,))
+                    u = dict(cursor.fetchone())
+                    token = generate_jwt(u['id'], u['email'], u['role'], u['name'])
+                    return self.send_json({
+                        "message": "Account successfully upgraded to Doctor profile!",
+                        "token": token,
+                        "user": u
+                    })
 
                 # 2. Login
                 elif path == '/api/auth/login':
@@ -513,13 +540,13 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
 
                     cursor.execute("""
                     INSERT INTO appointments (patient_id, doctor_id, date, time_slot, status, symptoms, fee, payment_status)
-                    VALUES (?, ?, ?, ?, 'Confirmed', ?, ?, 'Paid')
+                    VALUES (?, ?, ?, ?, 'Pending', ?, ?, 'Paid')
                     """, (user['user_id'], doctor_id, date, time_slot, symptoms, fee))
                     conn.commit()
                     appt_id = cursor.lastrowid
 
                     # Add notification for patient
-                    cursor.execute("INSERT INTO notifications (user_id, title, message, type) VALUES (?, 'Appointment Confirmed', ?, 'appointment')", (user['user_id'], f"Your appointment for {date} at {time_slot} is confirmed."))
+                    cursor.execute("INSERT INTO notifications (user_id, title, message, type) VALUES (?, 'Appointment Submitted', ?, 'appointment')", (user['user_id'], f"Your appointment request for {date} at {time_slot} has been submitted."))
                     conn.commit()
 
                     return self.send_json({"message": "Appointment booked successfully!", "appointment_id": appt_id}, 201)
@@ -652,7 +679,7 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                     })
 
                 # 12. Register Blood Donor
-                elif path == '/api/blood-donors/register':
+                elif path == '/api/blood-donors' or path == '/api/blood-donors/register':
                     name = body.get('name')
                     blood_group = body.get('blood_group')
                     city = body.get('city')
@@ -719,6 +746,35 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                         return self.send_error_json("Permission denied", 403)
 
                     cursor.execute("UPDATE appointments SET status=? WHERE id=?", (status, appt_id))
+
+                    # Auto-refund when cancelled or rejected
+                    if status in ('Cancelled', 'Rejected'):
+                        cursor.execute(
+                            "SELECT payment_status, fee, patient_id FROM appointments WHERE id=?",
+                            (appt_id,)
+                        )
+                        appt = cursor.fetchone()
+                        if appt and appt['payment_status'] == 'Paid':
+                            cursor.execute(
+                                "UPDATE appointments SET payment_status='Refunded' WHERE id=?",
+                                (appt_id,)
+                            )
+                            import uuid
+                            refund_txn = 'REFUND-' + str(uuid.uuid4())[:8].upper()
+                            cursor.execute(
+                                """INSERT INTO payments
+                                   (patient_id, related_type, related_id, amount, gateway, transaction_id, status)
+                                   VALUES (?, 'Appointment', ?, ?, 'Refund', ?, 'Refunded')""",
+                                (appt['patient_id'], appt_id, appt['fee'], refund_txn)
+                            )
+                            cursor.execute(
+                                """INSERT INTO notifications (user_id, title, message, type)
+                                   VALUES (?, 'Refund Processed',
+                                   'Your payment of ৳' || ? || ' for appointment #' || ? || ' has been refunded. TRX: ' || ?,
+                                   'refund')""",
+                                (appt['patient_id'], appt['fee'], appt_id, refund_txn)
+                            )
+
                     conn.commit()
                     return self.send_json({"message": f"Appointment status updated to {status}"})
 
@@ -729,7 +785,41 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                     if not user:
                         return self.send_error_json("Unauthorized", 401)
 
-                    cursor.execute("UPDATE appointments SET status='Cancelled' WHERE id=? AND patient_id=?", (appt_id, user['user_id']))
+                    cursor.execute(
+                        "SELECT payment_status, fee, patient_id FROM appointments WHERE id=? AND patient_id=?",
+                        (appt_id, user['user_id'])
+                    )
+                    appt = cursor.fetchone()
+                    if not appt:
+                        return self.send_error_json("Appointment not found", 404)
+
+                    cursor.execute(
+                        "UPDATE appointments SET status='Cancelled' WHERE id=? AND patient_id=?",
+                        (appt_id, user['user_id'])
+                    )
+
+                    # Auto-refund if already paid
+                    if appt['payment_status'] == 'Paid':
+                        cursor.execute(
+                            "UPDATE appointments SET payment_status='Refunded' WHERE id=?",
+                            (appt_id,)
+                        )
+                        import uuid
+                        refund_txn = 'REFUND-' + str(uuid.uuid4())[:8].upper()
+                        cursor.execute(
+                            """INSERT INTO payments
+                               (patient_id, related_type, related_id, amount, gateway, transaction_id, status)
+                               VALUES (?, 'Appointment', ?, ?, 'Refund', ?, 'Refunded')""",
+                            (appt['patient_id'], appt_id, appt['fee'], refund_txn)
+                        )
+                        cursor.execute(
+                            """INSERT INTO notifications (user_id, title, message, type)
+                               VALUES (?, 'Refund Processed',
+                               'Your payment of ৳' || ? || ' for appointment #' || ? || ' has been refunded. TRX: ' || ?,
+                               'refund')""",
+                            (appt['patient_id'], appt['fee'], appt_id, refund_txn)
+                        )
+
                     conn.commit()
                     return self.send_json({"message": "Appointment cancelled."})
 
@@ -752,16 +842,64 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                     if not user or user['role'] != 'doctor':
                         return self.send_error_json("Doctor role required", 403)
                     
+                    user_id = user['user_id']
+                    name = body.get('name')
+                    phone = body.get('phone')
+                    specialization = body.get('specialization')
+                    hospital = body.get('hospital')
+                    qualification = body.get('qualification')
+                    experience_years = body.get('experience_years')
                     fee = body.get('fee')
                     available_days = body.get('available_days')
                     available_time = body.get('available_time')
                     about = body.get('about')
 
-                    cursor.execute("""
-                    UPDATE doctors SET fee=?, available_days=?, available_time=?, about=? WHERE user_id=?
-                    """, (fee, json.dumps(available_days), available_time, about, user['user_id']))
+                    if name:
+                        cursor.execute("UPDATE users SET name=? WHERE id=?", (name, user_id))
+                    if phone is not None:
+                        cursor.execute("UPDATE users SET phone=? WHERE id=?", (phone, user_id))
+
+                    cursor.execute("SELECT id FROM doctors WHERE user_id=?", (user_id,))
+                    doc_row = cursor.fetchone()
+                    if not doc_row:
+                        cursor.execute("""
+                        INSERT INTO doctors (user_id, specialization, hospital, qualification, experience_years, fee, available_days, available_time, about)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (user_id, specialization or 'General Physician', hospital or 'Not specified', qualification or 'MBBS', experience_years or 5, fee or 1000.0, json.dumps(available_days or ["Mon", "Wed", "Fri"]), available_time or "10:00 AM - 04:00 PM", about or 'Specialist Doctor'))
+                    else:
+                        updates = []
+                        params = []
+                        if specialization is not None:
+                            updates.append("specialization=?")
+                            params.append(specialization)
+                        if hospital is not None:
+                            updates.append("hospital=?")
+                            params.append(hospital)
+                        if qualification is not None:
+                            updates.append("qualification=?")
+                            params.append(qualification)
+                        if experience_years is not None:
+                            updates.append("experience_years=?")
+                            params.append(experience_years)
+                        if fee is not None:
+                            updates.append("fee=?")
+                            params.append(fee)
+                        if available_days is not None:
+                            updates.append("available_days=?")
+                            params.append(json.dumps(available_days))
+                        if available_time is not None:
+                            updates.append("available_time=?")
+                            params.append(available_time)
+                        if about is not None:
+                            updates.append("about=?")
+                            params.append(about)
+
+                        if updates:
+                            params.append(user_id)
+                            cursor.execute(f"UPDATE doctors SET {', '.join(updates)} WHERE user_id=?", params)
+
                     conn.commit()
-                    return self.send_json({"message": "Doctor profile & schedule updated successfully!"})
+                    return self.send_json({"message": "Doctor profile updated successfully!"})
 
                 # Patient Profile Update
                 elif path == '/api/patient/profile':
@@ -769,14 +907,52 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                     if not user:
                         return self.send_error_json("Unauthorized", 401)
                     
+                    user_id = user['user_id']
+                    name = body.get('name')
                     phone = body.get('phone')
+                    age = body.get('age')
+                    gender = body.get('gender')
+                    blood_group = body.get('blood_group')
                     address = body.get('address')
                     emergency = body.get('emergency_contact')
 
-                    cursor.execute("UPDATE users SET phone=? WHERE id=?", (phone, user['user_id']))
-                    cursor.execute("UPDATE patients SET address=?, emergency_contact=? WHERE user_id=?", (address, emergency, user['user_id']))
+                    if name:
+                        cursor.execute("UPDATE users SET name=? WHERE id=?", (name, user_id))
+                    if phone is not None:
+                        cursor.execute("UPDATE users SET phone=? WHERE id=?", (phone, user_id))
+
+                    cursor.execute("SELECT id FROM patients WHERE user_id=?", (user_id,))
+                    pat_row = cursor.fetchone()
+                    if not pat_row:
+                        cursor.execute("""
+                        INSERT INTO patients (user_id, age, gender, blood_group, address, emergency_contact)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                        """, (user_id, age or 30, gender or 'Male', blood_group or 'O+', address or 'Dhaka', emergency or phone))
+                    else:
+                        updates = []
+                        params = []
+                        if age is not None:
+                            updates.append("age=?")
+                            params.append(age)
+                        if gender is not None:
+                            updates.append("gender=?")
+                            params.append(gender)
+                        if blood_group is not None:
+                            updates.append("blood_group=?")
+                            params.append(blood_group)
+                        if address is not None:
+                            updates.append("address=?")
+                            params.append(address)
+                        if emergency is not None:
+                            updates.append("emergency_contact=?")
+                            params.append(emergency)
+
+                        if updates:
+                            params.append(user_id)
+                            cursor.execute(f"UPDATE patients SET {', '.join(updates)} WHERE user_id=?", params)
+
                     conn.commit()
-                    return self.send_json({"message": "Profile details updated successfully!"})
+                    return self.send_json({"message": "Patient profile updated successfully!"})
 
                 else:
                     return self.send_error_json("PUT route not found", 404)
@@ -800,6 +976,7 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
 
 def run_server():
     init_db()
+    socketserver.TCPServer.allow_reuse_address = True
     server_address = ('', PORT)
     httpd = socketserver.TCPServer(server_address, HealthcareRequestHandler)
     print(f"===============================================================")

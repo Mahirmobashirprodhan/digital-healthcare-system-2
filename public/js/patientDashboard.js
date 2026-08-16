@@ -3,23 +3,208 @@
    ========================================================================== */
 
 const PatientDashboard = {
+  profileData: null,
 
   async loadAllData() {
     const user = Auth.getUser();
     if (!user || user.role !== 'patient') return;
 
-    // Load Patient Appointments
+    this.loadPatientProfile();
     this.loadAppointments();
-    // Load Prescriptions
     this.loadPrescriptions();
-    // Load Medical Records
     this.loadMedicalRecords(user.id);
-    // Load Medicine Reminders
     this.loadReminders();
-    // Load Lab Bookings
     this.loadLabBookings();
-    // Load Home Service Requests
+    this.loadLabCatalogue();
     this.loadHomeServices();
+  },
+
+  toggleLabView(view) {
+    const bookingsView  = document.getElementById('lab-view-bookings');
+    const catalogueView = document.getElementById('lab-view-catalogue');
+    const tabBookings   = document.getElementById('lab-tab-bookings');
+    const tabCatalogue  = document.getElementById('lab-tab-catalogue');
+
+    if (view === 'catalogue') {
+      if (bookingsView)  bookingsView.style.display  = 'none';
+      if (catalogueView) catalogueView.style.display = 'block';
+      if (tabBookings)  { tabBookings.className  = 'btn btn-secondary btn-sm'; }
+      if (tabCatalogue) { tabCatalogue.className = 'btn btn-primary btn-sm'; }
+    } else {
+      if (bookingsView)  bookingsView.style.display  = 'block';
+      if (catalogueView) catalogueView.style.display = 'none';
+      if (tabBookings)  { tabBookings.className  = 'btn btn-primary btn-sm'; }
+      if (tabCatalogue) { tabCatalogue.className = 'btn btn-secondary btn-sm'; }
+    }
+  },
+
+  async loadLabCatalogue() {
+    const grid = document.getElementById('lab-catalogue-grid');
+    if (!grid) return;
+    grid.innerHTML = `<p style="color:var(--text-muted);">Loading available tests...</p>`;
+    try {
+      const res = await fetch('/api/labs');
+      const data = await res.json();
+      const tests = data.tests || [];
+
+      if (tests.length === 0) {
+        grid.innerHTML = `<p style="color:var(--text-muted);">No lab tests available.</p>`;
+        return;
+      }
+
+      const deptColors = {
+        'Hematology':    '#e2136e',
+        'Biochemistry':  '#0ea5e9',
+        'Endocrinology': '#8c3494',
+        'Radiology':     '#f7921e',
+        'Hormone':       '#f59e0b',
+        'Nephrology':    '#10b981',
+      };
+
+      grid.innerHTML = tests.map(t => {
+        const color = deptColors[t.department] || '#0ea5e9';
+        return `
+          <div style="background:var(--bg-primary); border:1px solid var(--border-color);
+                      border-radius:var(--radius-md); padding:1.25rem; position:relative;
+                      border-top: 3px solid ${color};">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
+              <strong style="font-size:0.95rem;">${t.title}</strong>
+              <span style="background:${color}20; color:${color}; font-size:0.72rem;
+                           padding:2px 8px; border-radius:20px; white-space:nowrap; margin-left:0.5rem;">
+                ${t.department}
+              </span>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem; line-height:1.5;">
+              ${t.description || ''}
+            </p>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">
+              🧫 Sample: <strong>${t.sample_type}</strong> &nbsp;|&nbsp;
+              ⏱ Result: <strong>${t.turnaround_time}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="font-size:1.1rem; color:var(--accent-emerald);">৳${t.price}</strong>
+              <button class="btn btn-primary btn-sm"
+                onclick="PatientDashboard.openLabBookingForm(${t.id}, '${t.title.replace(/'/g,"\\'")}', ${t.price})">
+                Book Now
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+
+    } catch (err) {
+      console.error(err);
+      grid.innerHTML = `<p style="color:var(--text-muted);">Could not load lab tests.</p>`;
+    }
+  },
+
+  openLabBookingForm(testId, testTitle, price) {
+    const sel    = document.getElementById('lab-booking-test-id');
+    const feeEl  = document.getElementById('lab-booking-fee');
+    const typeEl = document.getElementById('lab-booking-type');
+    const noteEl = document.getElementById('lab-home-extra-note');
+
+    // Pre-select the test and reset collection type to Lab Visit
+    if (sel)    sel.value = testId;
+    if (typeEl) typeEl.value = 'Lab Visit';
+    if (noteEl) noteEl.style.display = 'none';
+
+    // Set base fee and display
+    if (feeEl) {
+      feeEl.dataset.base = price;
+      feeEl.textContent  = '৳' + price;
+    }
+
+    // Update modal title
+    const titleEl = document.querySelector('#modal-lab-booking .modal-title');
+    if (titleEl) titleEl.textContent = '🧪 Book: ' + testTitle;
+
+    App.openModal('modal-lab-booking');
+  },
+
+  async loadPatientProfile() {
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${Auth.getToken()}` }
+      });
+      const data = await res.json();
+      if (!res.ok) return;
+
+      this.profileData = data.user;
+      const u = data.user;
+      const p = u.patient_info || {};
+
+      const elName = document.getElementById('p-dash-name');
+      const elDetails = document.getElementById('p-dash-details');
+
+      if (elName) elName.textContent = u.name || 'Patient';
+      if (elDetails) {
+        elDetails.innerHTML = `Blood Group: <strong style="color: var(--accent-rose);">${p.blood_group || 'A+'}</strong> | Age: ${p.age || 30}`;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  },
+
+  async openProfileModal() {
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${Auth.getToken()}` }
+      });
+      const data = await res.json();
+      const u = data.user || Auth.getUser();
+      const p = u.patient_info || {};
+
+      document.getElementById('pat-edit-name').value = u.name || '';
+      document.getElementById('pat-edit-phone').value = u.phone || '';
+      document.getElementById('pat-edit-age').value = p.age || 30;
+      document.getElementById('pat-edit-gender').value = p.gender || 'Male';
+      document.getElementById('pat-edit-bg').value = p.blood_group || 'O+';
+      document.getElementById('pat-edit-emergency').value = p.emergency_contact || '';
+      document.getElementById('pat-edit-address').value = p.address || '';
+
+      App.openModal('modal-patient-profile');
+    } catch (err) {
+      App.showToast(err.message, 'error');
+    }
+  },
+
+  async submitProfile(e) {
+    e.preventDefault();
+    const name = document.getElementById('pat-edit-name').value;
+    const phone = document.getElementById('pat-edit-phone').value;
+    const age = parseInt(document.getElementById('pat-edit-age').value) || 30;
+    const gender = document.getElementById('pat-edit-gender').value;
+    const blood_group = document.getElementById('pat-edit-bg').value;
+    const emergency_contact = document.getElementById('pat-edit-emergency').value;
+    const address = document.getElementById('pat-edit-address').value;
+
+    try {
+      const res = await fetch('/api/patient/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Auth.getToken()}`
+        },
+        body: JSON.stringify({
+          name, phone, age, gender, blood_group, emergency_contact, address
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update profile.');
+
+      const currentUser = Auth.getUser();
+      if (currentUser && name) {
+        currentUser.name = name;
+        localStorage.setItem(Auth.userKey, JSON.stringify(currentUser));
+        Auth.updateNavUI();
+      }
+
+      App.showToast(data.message, 'success');
+      App.closeModals();
+      this.loadPatientProfile();
+    } catch (err) {
+      App.showToast(err.message, 'error');
+    }
   },
 
   async loadAppointments() {
@@ -34,11 +219,35 @@ const PatientDashboard = {
       if (!tbody) return;
 
       if (appts.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No appointment records found. Book your first consultation above!</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No appointment records found. Book your first consultation above!</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = appts.map(a => `
+      tbody.innerHTML = appts.map(a => {
+        // Payment badge
+        let payBadge = '';
+        if (a.payment_status === 'Paid') {
+          payBadge = `<span class="badge badge-confirmed" title="Payment received">✓ Paid</span>`;
+        } else if (a.payment_status === 'Refunded') {
+          payBadge = `<span class="badge badge-cancelled" title="Payment refunded">💰 Refunded</span>`;
+        } else {
+          payBadge = `<span class="badge badge-pending">⏳ Unpaid</span>`;
+        }
+
+        // Actions
+        let actions = '';
+        if (a.status === 'Confirmed') {
+          actions = `
+            <button class="btn btn-emerald btn-sm" onclick="VideoConsult.startCall('${a.doctor_name.replace(/'/g, "\\'")  }', 'Doctor', ${a.id})">🎥 Join Video Consult</button>
+            <button class="btn btn-rose btn-sm" onclick="PatientDashboard.cancelAppointment(${a.id})">✕ Cancel</button>
+          `;
+        } else if (a.status === 'Pending') {
+          actions = `<button class="btn btn-rose btn-sm" onclick="PatientDashboard.cancelAppointment(${a.id})">✕ Cancel</button>`;
+        } else if (a.status === 'Completed') {
+          actions = `<button class="btn btn-secondary btn-sm" onclick="PatientDashboard.openReviewModal(${a.doctor_id})">&#11088; Review</button>`;
+        }
+
+        return `
         <tr>
           <td>
             <div style="font-weight: 600;">${a.doctor_name}</div>
@@ -47,20 +256,30 @@ const PatientDashboard = {
           <td>${a.date}<br><small style="color: var(--text-secondary);">${a.time_slot}</small></td>
           <td>৳${a.fee}</td>
           <td><span class="badge badge-${a.status.toLowerCase()}">${a.status}</span></td>
+          <td>${payBadge}</td>
           <td>${a.symptoms || 'General Checkup'}</td>
-          <td>
-            ${a.status === 'Confirmed' ? `
-              <button class="btn btn-emerald btn-sm" onclick="VideoConsult.startCall('${a.doctor_name.replace(/'/g, "\\'")}', 'Doctor', ${a.id})">🎥 Join Video Consult</button>
-            ` : ''}
-            ${a.status === 'Completed' ? `
-              <button class="btn btn-secondary btn-sm" onclick="PatientDashboard.openReviewModal(${a.doctor_id})">⭐ Review</button>
-            ` : ''}
-          </td>
-        </tr>
-      `).join('');
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
 
     } catch (err) {
       console.error(err);
+    }
+  },
+
+  async cancelAppointment(apptId) {
+    if (!confirm('Are you sure you want to cancel this appointment? If already paid, a refund will be processed automatically.')) return;
+    try {
+      const res = await fetch(`/api/appointments/${apptId}/cancel`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${Auth.getToken()}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not cancel appointment.');
+      App.showToast(data.message + (data.refunded ? ' Your payment has been refunded.' : ''), 'success');
+      this.loadAppointments();
+    } catch (err) {
+      App.showToast(err.message, 'error');
     }
   },
 

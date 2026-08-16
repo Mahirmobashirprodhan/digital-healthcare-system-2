@@ -21,16 +21,18 @@
 
   <!-- Navbar -->
   <nav class="navbar">
-    <div class="brand-logo" onclick="App.navigateTo('home')">
+    <div class="brand-logo" onclick="window.location.href='/'">
       <div class="brand-icon">✚</div>
       <span>DigitalCare<span style="color: var(--accent-blue);">.bd</span></span>
     </div>
 
-    <ul class="nav-links">
-      <li><a class="nav-link active" id="nav-link-home" onclick="App.navigateTo('home')">Home</a></li>
+    <button class="nav-toggle-btn" id="nav-toggle-btn" aria-label="Toggle navigation">☰</button>
+
+    <ul class="nav-links" id="nav-links">
+      <li><a class="nav-link active" id="nav-link-home" href="/">Home</a></li>
       <li><a class="nav-link" id="nav-link-search" onclick="App.navigateTo('search')">Find Doctors</a></li>
-      <li><a class="nav-link" onclick="App.openModal('modal-blood-donor')">Blood Donors</a></li>
-      <li><a class="nav-link" onclick="App.openModal('modal-home-service')">Home Care</a></li>
+      <li><a class="nav-link" id="nav-link-blood-donors" href="/blood-donors">Blood Donors</a></li>
+      <li><a class="nav-link" id="nav-link-home-care" href="/home-care">Home Care</a></li>
       <li><a class="nav-link" onclick="App.openModal('modal-contact')">Contact Us</a></li>
       <li><a class="nav-link" id="nav-link-patient" style="display:none;"
           onclick="App.navigateTo('patient-dashboard')">My Dashboard</a></li>
@@ -62,9 +64,9 @@
 
           <div class="hero-actions">
             <button class="btn btn-primary" onclick="App.navigateTo('search')">🔍 Search Doctors & Book</button>
-            <button class="btn btn-emerald" onclick="App.openModal('modal-home-service')">🏠 Request Home
+            <button class="btn btn-emerald" onclick="window.location.href='/home-care'">🏠 Request Home
               Healthcare</button>
-            <button class="btn btn-secondary" onclick="App.openModal('modal-blood-donor')">🩸 Search Blood
+            <button class="btn btn-secondary" onclick="window.location.href='/blood-donors'">🩸 Search Blood
               Donors</button>
           </div>
 
@@ -111,7 +113,7 @@
           <p>Book CBC, Lipid Profile, Thyroid, or HbA1c tests online with downloadable digital PDF reports.</p>
         </div>
 
-        <div class="service-card" onclick="App.openModal('modal-home-service')">
+        <div class="service-card" onclick="window.location.href='/home-care'">
           <div class="service-icon">🏠</div>
           <h3>Home Nursing & Sample Collection</h3>
           <p>Trained medical staff visit your home for blood sample collection, elder care, and physical therapy.</p>
@@ -123,7 +125,7 @@
           <p>Never miss a dose. Set up smart daily medicine alerts with automatic browser push notifications.</p>
         </div>
 
-        <div class="service-card" onclick="App.openModal('modal-blood-donor')">
+        <div class="service-card" onclick="window.location.href='/blood-donors'">
           <div class="service-icon">🩸</div>
           <h3>Emergency Blood Donors</h3>
           <p>Instant search for voluntary blood donors filtered by blood group (A+, B+, O-, AB+) and area location.</p>
@@ -205,14 +207,14 @@
             <p style="font-size: 0.85rem; color: var(--accent-blue);">Patient Account</p>
             <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem;" id="p-dash-details">Blood
               Group: <strong style="color: var(--accent-rose);">A+</strong> | Age: 34</div>
-            <button class="btn btn-secondary btn-sm" onclick="App.openModal('modal-patient-profile')"
+            <button class="btn btn-secondary btn-sm" onclick="PatientDashboard.openProfileModal()"
               style="margin-top: 0.75rem; width: 100%;">✏️ Edit Profile</button>
           </div>
 
           <ul class="sidebar-menu">
             <li class="sidebar-item active" onclick="App.navigateTo('patient-dashboard')">📅 My Appointments</li>
             <li class="sidebar-item" onclick="App.openModal('modal-reminder')">💊 Medicine Reminders</li>
-            <li class="sidebar-item" onclick="App.openModal('modal-lab-booking')">🧪 Lab Test Bookings</li>
+            <li class="sidebar-item" onclick="document.getElementById('panel-lab-tests').scrollIntoView({behavior:'smooth'}); PatientDashboard.toggleLabView('bookings')">🧪 Lab Test Bookings</li>
             <li class="sidebar-item" onclick="App.openModal('modal-home-service')">🏠 Home Healthcare</li>
           </ul>
         </div>
@@ -232,6 +234,7 @@
                     <th>Date & Time</th>
                     <th>Fee</th>
                     <th>Status</th>
+                    <th>Payment</th>
                     <th>Symptoms</th>
                     <th>Action</th>
                   </tr>
@@ -270,11 +273,35 @@
             </div>
           </div>
 
-          <!-- Lab Bookings Panel -->
-          <div class="card-panel">
-            <h3 class="panel-title" style="margin-bottom: 1rem;">Diagnostic Lab Bookings</h3>
-            <div id="patient-labs-list">
-              <!-- Injected via JS -->
+          <!-- Lab Tests Module Panel -->
+          <div class="card-panel" id="panel-lab-tests">
+            <div class="panel-header">
+              <h3 class="panel-title">🧪 Diagnostic Lab Tests</h3>
+              <button class="btn btn-primary btn-sm" onclick="PatientDashboard.toggleLabView('catalogue')">
+                + Book a Test
+              </button>
+            </div>
+
+            <!-- Sub-tabs -->
+            <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem;">
+              <button id="lab-tab-bookings" class="btn btn-primary btn-sm"
+                onclick="PatientDashboard.toggleLabView('bookings')">My Bookings</button>
+              <button id="lab-tab-catalogue" class="btn btn-secondary btn-sm"
+                onclick="PatientDashboard.toggleLabView('catalogue')">Test Catalogue</button>
+            </div>
+
+            <!-- My Bookings View -->
+            <div id="lab-view-bookings">
+              <div id="patient-labs-list">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <!-- Test Catalogue View -->
+            <div id="lab-view-catalogue" style="display:none;">
+              <div id="lab-catalogue-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:1rem;">
+                <!-- Injected via JS -->
+              </div>
             </div>
           </div>
 
@@ -297,9 +324,12 @@
           <div class="user-profile-summary">
             <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=200&q=80"
               alt="Doctor Avatar" class="avatar-lg">
-            <h3 style="font-size: 1.2rem;">Dr. Anisur Rahman</h3>
-            <p style="font-size: 0.85rem; color: var(--accent-blue);">Cardiology Specialist</p>
-            <p style="font-size: 0.8rem; color: var(--text-secondary);">Square Hospital, Dhaka</p>
+            <h3 style="font-size: 1.2rem;" id="doc-dash-name">Doctor Name</h3>
+            <p style="font-size: 0.85rem; color: var(--accent-blue);" id="doc-dash-spec">General Physician</p>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);" id="doc-dash-hospital">Hospital: Not specified</p>
+            <div style="font-size: 0.8rem; color: var(--accent-emerald); font-weight: 600; margin-top: 0.25rem;" id="doc-dash-fee">Fee: ৳1000</div>
+            <button class="btn btn-secondary btn-sm" onclick="DoctorDashboard.openProfileModal()"
+              style="margin-top: 0.75rem; width: 100%;">✏️ Edit Profile</button>
           </div>
 
           <div
@@ -551,19 +581,9 @@
         </div>
 
         <div id="doctor-fields" style="display: none;">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Specialization</label>
-              <input type="text" id="reg-specialization" class="form-control" placeholder="Cardiology">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Consultation Fee (৳)</label>
-              <input type="number" id="reg-fee" class="form-control" value="1200">
-            </div>
-          </div>
           <div class="form-group">
-            <label class="form-label">Hospital / Clinic</label>
-            <input type="text" id="reg-hospital" class="form-control" placeholder="Square Hospital, Dhaka">
+            <label class="form-label">Specialization</label>
+            <input type="text" id="reg-specialization" class="form-control" placeholder="e.g. General Physician / Cardiology">
           </div>
         </div>
 
@@ -792,47 +812,100 @@
   </div>
 
   <!-- 6. BANGLADESHI PAYMENT GATEWAY MODAL -->
+  <!-- 6. BANGLADESHI & INTERNATIONAL PAYMENT GATEWAY MODAL -->
   <div id="modal-payment" class="modal-overlay">
-    <div class="modal-content" style="max-width: 450px;">
+    <div class="modal-content" style="max-width: 480px;">
       <div class="modal-header">
-        <h3 class="modal-title">Payment Checkout</h3>
+        <h3 class="modal-title">💳 Secure Payment Checkout</h3>
         <button class="close-btn" onclick="App.closeModals()">✕</button>
       </div>
 
-      <div style="text-align: center; margin-bottom: 1.5rem;">
-        <div style="font-size: 0.9rem; color: var(--text-secondary);">Total Payable Amount</div>
-        <div style="font-size: 2.2rem; font-weight: 800; color: var(--accent-emerald);" id="payment-amount-display">
-          ৳1200</div>
+      <div style="text-align: center; margin-bottom: 1.25rem; background: var(--bg-primary); padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+        <div style="font-size: 0.85rem; color: var(--text-secondary);">Total Payable Amount</div>
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--accent-emerald);" id="payment-amount-display">৳1000</div>
       </div>
 
       <!-- Step 1: Select Gateway -->
       <div id="payment-step-gateway">
-        <label class="form-label" style="margin-bottom: 0.75rem;">Select Payment Method</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('bKash')"
-            style="border-color: #e2136e; color: #e2136e; font-size: 1.1rem; font-weight: 800;">bKash</button>
-          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Nagad')"
-            style="border-color: #f7921e; color: #f7921e; font-size: 1.1rem; font-weight: 800;">Nagad</button>
-          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Rocket')"
-            style="border-color: #8c3494; color: #8c3494; font-size: 1.1rem; font-weight: 800;">Rocket</button>
-          <button class="btn btn-secondary" onclick="PaymentSystem.selectGateway('SSLCommerz')"
-            style="border-color: #0ea5e9; color: #0ea5e9; font-size: 1rem; font-weight: 800;">SSLCommerz</button>
+        <label class="form-label" style="margin-bottom: 0.75rem; font-weight: 600;">Choose Payment Method</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+          <button type="button" class="btn btn-secondary" onclick="PaymentSystem.selectGateway('bKash')"
+            style="border-color: #e2136e; color: #e2136e; font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.75rem;">
+            <span>🌸</span> bKash
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Nagad')"
+            style="border-color: #f7921e; color: #f7921e; font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.75rem;">
+            <span>🔥</span> Nagad
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Rocket')"
+            style="border-color: #8c3494; color: #8c3494; font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.75rem;">
+            <span>🚀</span> Rocket
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="PaymentSystem.selectGateway('Card')"
+            style="border-color: #0ea5e9; color: #0ea5e9; font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.75rem;">
+            <span>💳</span> Debit/Credit Card
+          </button>
         </div>
       </div>
 
-      <!-- Step 2: Verification PIN/OTP -->
-      <div id="payment-step-otp" style="display: none;">
-        <div
-          style="background: var(--bg-primary); padding: 0.75rem; border-radius: var(--radius-md); margin-bottom: 1rem; text-align: center;">
-          Selected Gateway: <strong id="payment-gateway-brand">bKash</strong>
+      <!-- Step 2A: Mobile Banking Details (bKash / Nagad / Rocket) -->
+      <div id="payment-step-mobile" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="PaymentSystem.showGateways()">← Change Method</button>
+          <div style="font-size: 0.95rem; font-weight: 700;">Selected: <span id="payment-mobile-brand" style="color: #e2136e;">bKash</span></div>
         </div>
+
         <form onsubmit="PaymentSystem.confirmPayment(event)">
           <div class="form-group">
-            <label class="form-label">Enter Mobile Wallet PIN / OTP</label>
-            <input type="password" id="payment-pin-input" class="form-control" placeholder="e.g. 12345" required>
+            <label class="form-label">Mobile Account Number</label>
+            <input type="tel" id="payment-mobile-number" class="form-control" placeholder="e.g. 01712345678" maxlength="11" required>
+            <small style="font-size: 0.75rem; color: var(--text-secondary);">Enter your 11-digit personal wallet number.</small>
           </div>
-          <button type="submit" class="btn btn-emerald" style="width: 100%;">Confirm Payment</button>
+
+          <div class="form-group">
+            <label class="form-label">PIN / Security OTP</label>
+            <input type="password" id="payment-mobile-pin" class="form-control" placeholder="Enter 4 or 5-digit PIN / OTP" maxlength="6" required>
+          </div>
+
+          <button type="submit" id="payment-mobile-btn" class="btn btn-emerald" style="width: 100%; margin-top: 0.5rem; font-weight: 700; padding: 0.75rem;">Confirm & Pay</button>
         </form>
+      </div>
+
+      <!-- Step 2B: Card Payment Details (Visa / Mastercard / AMEX via SSLCommerz) -->
+      <div id="payment-step-card" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="PaymentSystem.showGateways()">← Change Method</button>
+          <div style="font-size: 0.95rem; font-weight: 700; color: #0ea5e9;">Visa / Mastercard / AMEX</div>
+        </div>
+
+        <form onsubmit="PaymentSystem.confirmPayment(event)">
+          <div class="form-group">
+            <label class="form-label">Cardholder Name</label>
+            <input type="text" id="payment-card-name" class="form-control" placeholder="Name as printed on card" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Card Number</label>
+            <input type="text" id="payment-card-number" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Expiry (MM/YY)</label>
+              <input type="text" id="payment-card-expiry" class="form-control" placeholder="MM/YY" maxlength="5" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">CVV / CVC</label>
+              <input type="password" id="payment-card-cvv" class="form-control" placeholder="123" maxlength="4" required>
+            </div>
+          </div>
+
+          <button type="submit" id="payment-card-btn" class="btn btn-emerald" style="width: 100%; margin-top: 0.5rem; font-weight: 700; padding: 0.75rem;">Confirm & Pay via Card</button>
+        </form>
+      </div>
+
+      <div style="margin-top: 1rem; text-align: center; font-size: 0.75rem; color: var(--text-muted);">
+        🔒 256-Bit SSL Encrypted & Bank Grade Secure Gateway
       </div>
     </div>
   </div>
@@ -849,7 +922,11 @@
           <label class="form-label">Select Lab Test</label>
           <select id="lab-booking-test-id" class="form-control" onchange="
             const feeMap = {'1': 600, '2': 1200, '3': 800, '4': 900, '5': 1400, '6': 750};
-            document.getElementById('lab-booking-fee').textContent = '৳' + (feeMap[this.value] || 600);
+            const base = feeMap[this.value] || 600;
+            const feeEl = document.getElementById('lab-booking-fee');
+            const homeExtra = document.getElementById('lab-booking-type').value === 'Home Collection' ? 200 : 0;
+            feeEl.dataset.base = base;
+            feeEl.textContent = '৳' + (base + homeExtra);
           ">
             <option value="1">Complete Blood Count (CBC) — ৳600</option>
             <option value="2">Lipid Profile Test — ৳1200</option>
@@ -867,11 +944,24 @@
           </div>
           <div class="form-group">
             <label class="form-label">Sample Collection Type</label>
-            <select id="lab-booking-type" class="form-control">
+            <select id="lab-booking-type" class="form-control" onchange="
+              const feeEl = document.getElementById('lab-booking-fee');
+              const base = parseFloat(feeEl.dataset.base) || parseFloat(feeEl.textContent.replace('৳','')) || 600;
+              feeEl.dataset.base = base;
+              const homeExtra = this.value === 'Home Collection' ? 200 : 0;
+              feeEl.textContent = '৳' + (base + homeExtra);
+              document.getElementById('lab-home-extra-note').style.display = homeExtra ? 'block' : 'none';
+            ">
               <option value="Lab Visit">Diagnostic Center Visit</option>
               <option value="Home Collection">Home Sample Collection (+৳200)</option>
             </select>
           </div>
+        </div>
+
+        <div id="lab-home-extra-note" style="display:none; background:rgba(14,165,233,0.08);
+             border:1px solid var(--accent-blue); border-radius:var(--radius-sm);
+             padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--accent-blue); margin-bottom:1rem;">
+          🏠 Home collection surcharge of <strong>৳200</strong> added for door-step sample pickup.
         </div>
 
         <div class="form-group">
@@ -881,8 +971,8 @@
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-          <span>Test Fee:</span>
-          <strong id="lab-booking-fee" style="font-size: 1.2rem; color: var(--accent-emerald);">৳600</strong>
+          <span>Total Fee:</span>
+          <strong id="lab-booking-fee" data-base="600" style="font-size: 1.2rem; color: var(--accent-emerald);">৳600</strong>
         </div>
 
         <button type="submit" class="btn btn-primary" style="width: 100%;">Pay & Schedule Test</button>
@@ -962,7 +1052,7 @@
                   <strong style='font-size: 1.05rem;'>${donor.name}</strong> <span class='badge badge-rejected'>${donor.blood_group}</span>
                   <div style='font-size: 0.8rem; color: var(--text-secondary);'>${donor.area}, ${donor.city} • Last Donated: ${donor.last_donated}</div>
                 </div>
-                <a href='tel:${donor.phone}' class='btn btn-emerald btn-sm'>📞 Call ${donor.phone}</a>
+                <div style='background: var(--bg-secondary); padding: 0.35rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-weight: 600; font-size: 0.85rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem;'><span>📞</span> <span>${donor.phone}</span></div>
               </div>
             `).join('');
           });
@@ -1062,6 +1152,132 @@
             placeholder="Share your experience with the consultation..." required></textarea>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 13. DOCTOR PROFILE EDIT MODAL -->
+  <div id="modal-doctor-profile" class="modal-overlay">
+    <div class="modal-content" style="max-width: 550px;">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ Edit Doctor Profile</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <form id="form-doctor-profile" onsubmit="DoctorDashboard.submitProfile(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="doc-edit-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="text" id="doc-edit-phone" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Specialization</label>
+            <input type="text" id="doc-edit-spec" class="form-control" placeholder="e.g. Cardiology" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Consultation Fee (৳)</label>
+            <input type="number" id="doc-edit-fee" class="form-control" min="0" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Hospital / Clinic</label>
+            <input type="text" id="doc-edit-hospital" class="form-control" placeholder="e.g. Square Hospital, Dhaka">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qualification</label>
+            <input type="text" id="doc-edit-qualification" class="form-control" placeholder="e.g. MBBS, FCPS">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Experience (Years)</label>
+            <input type="number" id="doc-edit-exp" class="form-control" min="0" value="5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Available Time</label>
+            <input type="text" id="doc-edit-time" class="form-control" placeholder="10:00 AM - 04:00 PM">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">About / Bio</label>
+          <textarea id="doc-edit-about" class="form-control" rows="3" placeholder="Brief professional description..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-emerald" style="width: 100%; margin-top: 1rem;">💾 Save Profile Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 14. PATIENT PROFILE EDIT MODAL -->
+  <div id="modal-patient-profile" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">✏️ Edit Patient Profile</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <form id="form-patient-profile" onsubmit="PatientDashboard.submitProfile(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="pat-edit-name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="text" id="pat-edit-phone" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Age</label>
+            <input type="number" id="pat-edit-age" class="form-control" min="1" max="120" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select id="pat-edit-gender" class="form-control">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Blood Group</label>
+            <select id="pat-edit-bg" class="form-control">
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Emergency Contact</label>
+            <input type="text" id="pat-edit-emergency" class="form-control" placeholder="+8801700000000">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <input type="text" id="pat-edit-address" class="form-control" placeholder="House/Road, Area, City">
+        </div>
+
+        <button type="submit" class="btn btn-emerald" style="width: 100%; margin-top: 1rem;">💾 Save Profile Changes</button>
       </form>
     </div>
   </div>

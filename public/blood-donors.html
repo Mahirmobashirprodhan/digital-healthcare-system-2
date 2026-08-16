@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emergency Blood Donors Bank – DigitalCare.bd</title>
+  <meta name="description"
+    content="Find emergency voluntary blood donors by blood group and city area, or register to become a voluntary blood donor in Bangladesh.">
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/consultation.css">
+</head>
+
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="brand-logo" onclick="window.location.href='/'">
+      <div class="brand-icon">✚</div>
+      <span>DigitalCare<span style="color: var(--accent-blue);">.bd</span></span>
+    </div>
+
+    <button class="nav-toggle-btn" id="nav-toggle-btn" aria-label="Toggle navigation">☰</button>
+
+    <ul class="nav-links" id="nav-links">
+      <li><a class="nav-link" id="nav-link-home" href="/">Home</a></li>
+      <li><a class="nav-link" id="nav-link-search" href="/#search">Find Doctors</a></li>
+      <li><a class="nav-link active" id="nav-link-blood-donors" href="/blood-donors">Blood Donors</a></li>
+      <li><a class="nav-link" id="nav-link-home-care" href="/home-care">Home Care</a></li>
+      <li><a class="nav-link" onclick="App.openModal('modal-contact')">Contact Us</a></li>
+      <li><a class="nav-link" id="nav-link-patient" style="display:none;"
+          onclick="App.navigateTo('patient-dashboard')">My Dashboard</a></li>
+      <li><a class="nav-link" id="nav-link-doctor" style="display:none;"
+          onclick="App.navigateTo('doctor-dashboard')">Doctor Portal</a></li>
+      <li><a class="nav-link" id="nav-link-admin" style="display:none;"
+          onclick="App.navigateTo('admin-dashboard')">Admin Panel</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <button class="btn btn-secondary btn-sm" onclick="App.toggleTheme()" title="Toggle Dark/Light Mode">🌙 /
+        ☀️</button>
+      <div id="nav-auth-container">
+        <!-- Auth buttons injected by JS -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    
+    <!-- Hero Section -->
+    <div class="page-hero">
+      <div style="max-width: 800px;">
+        <span class="badge badge-rejected" style="margin-bottom: 0.75rem; font-size: 0.85rem;">🩸 Emergency Lifesaver Network</span>
+        <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">
+          Find Emergency Blood Donors & Save Lives
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 1.5rem; line-height: 1.7;">
+          Connect with registered voluntary blood donors across Bangladesh instantly. Filter by blood group and local area, or join our community of active blood donors to save lives.
+        </p>
+
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap; margin-top: 1rem;">
+          <div>
+            <h3 style="font-size: 1.6rem; color: var(--accent-rose); font-weight: 800;">1,250+</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Registered Donors</p>
+          </div>
+          <div>
+            <h3 style="font-size: 1.6rem; color: var(--accent-emerald); font-weight: 800;">8 Blood Groups</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Available 24/7</p>
+          </div>
+          <div>
+            <h3 style="font-size: 1.6rem; color: var(--accent-blue); font-weight: 800;">100% Free</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Voluntary Service</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Donors Filter Section -->
+    <div class="card-panel" style="margin-bottom: 2.5rem;">
+      <h2 style="font-size: 1.3rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        🔍 Search Available Donors
+      </h2>
+
+      <div class="filter-bar" style="grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: center;">
+        <div>
+          <label class="form-label">Blood Group</label>
+          <select id="page-bd-search-group" class="form-control">
+            <option value="">All Blood Groups</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label">City or Area</label>
+          <input type="text" id="page-bd-search-city" class="form-control" placeholder="e.g. Dhanmondi, Gulshan, Uttara, Chattogram">
+        </div>
+
+        <div style="align-self: flex-end;">
+          <button class="btn btn-primary" style="height: 44px;" onclick="BloodDonorPage.searchDonors()">🔍 Search Donors</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Results Grid -->
+    <div style="margin-bottom: 3rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.2rem; font-weight: 700;">Matching Voluntary Donors</h3>
+        <span id="donor-count-badge" class="badge badge-patient">Loading...</span>
+      </div>
+
+      <div id="page-blood-donors-results" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+    <!-- Two-Column Section: Registration & Eligibility -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;" class="form-row">
+      
+      <!-- Registration Form Card -->
+      <div class="card-panel">
+        <h2 style="font-size: 1.25rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+          🩸 Register as a Voluntary Blood Donor
+        </h2>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Join our emergency donor registry. Your contact info will be accessible to patients needing urgent blood transfusions.
+        </p>
+
+        <form id="page-form-blood-donor">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" id="page-donor-name" class="form-control" placeholder="e.g. Shakib Ahmed" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Blood Group *</label>
+              <select id="page-donor-group" class="form-control" required>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">City *</label>
+              <input type="text" id="page-donor-city" class="form-control" placeholder="e.g. Dhaka" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Local Area / Thana *</label>
+              <input type="text" id="page-donor-area" class="form-control" placeholder="e.g. Mirpur" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contact Phone *</label>
+              <input type="text" id="page-donor-phone" class="form-control" placeholder="+8801712345678" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Last Donated Date (Optional)</label>
+            <input type="date" id="page-donor-last-date" class="form-control">
+          </div>
+
+          <button type="submit" class="btn btn-rose" style="width: 100%; font-size: 1rem; padding: 0.85rem;">
+            ❤️ Submit Voluntary Registration
+          </button>
+        </form>
+      </div>
+
+      <!-- Guidelines & Hotline Card -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="card-panel" style="background: rgba(244, 63, 94, 0.08); border-color: rgba(244, 63, 94, 0.25);">
+          <h3 style="color: var(--accent-rose); font-size: 1.15rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            🚨 Urgent Emergency Request?
+          </h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6;">
+            If you need rare blood groups (such as O-negative or AB-negative) for immediate ICU or surgery requirements, contact our 24/7 National Emergency Hotline immediately.
+          </p>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="tel:999" class="btn btn-rose btn-sm">📞 Call National Emergency 999</a>
+            <button class="btn btn-secondary btn-sm" onclick="App.openModal('modal-emergency')">🚨 Open Emergency Portal</button>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <h3 style="font-size: 1.15rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            📋 Donor Eligibility Criteria
+          </h3>
+          <ul style="list-style-type: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem; color: var(--text-secondary);">
+            <li style="display: flex; gap: 0.6rem;">
+              <span style="color: var(--accent-emerald);">✔</span>
+              <span><strong>Age:</strong> Between 18 and 60 years old.</span>
+            </li>
+            <li style="display: flex; gap: 0.6rem;">
+              <span style="color: var(--accent-emerald);">✔</span>
+              <span><strong>Weight:</strong> Minimum 50 kg (110 lbs).</span>
+            </li>
+            <li style="display: flex; gap: 0.6rem;">
+              <span style="color: var(--accent-emerald);">✔</span>
+              <span><strong>Interval:</strong> At least 3 months (90 days) since your last blood donation.</span>
+            </li>
+            <li style="display: flex; gap: 0.6rem;">
+              <span style="color: var(--accent-emerald);">✔</span>
+              <span><strong>Hemoglobin:</strong> Minimum 12.5 g/dL with normal blood pressure and temperature.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Modals -->
+  <!-- Auth Modal -->
+  <div id="modal-auth" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="auth-modal-title">🔐 Patient & Doctor Access</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="auth-tab-login" onclick="App.openAuthModal('login')">Log In</div>
+        <div class="auth-tab" id="auth-tab-register" onclick="App.openAuthModal('register')">Create Account</div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="login-email" class="form-control" placeholder="user@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="form-register" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Account Role</label>
+          <select id="reg-role" class="form-control">
+            <option value="patient">Patient Account</option>
+            <option value="doctor">Doctor Account</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="reg-name" class="form-control" placeholder="Dr. John Doe / Rahat Ali" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="reg-email" class="form-control" placeholder="name@domain.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="text" id="reg-phone" class="form-control" placeholder="+8801700000000" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="reg-password" class="form-control" placeholder="At least 6 chars" required>
+        </div>
+        <button type="submit" class="btn btn-emerald" style="width: 100%;">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Contact Us Modal -->
+  <div id="modal-contact" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">💬 Contact Healthcare Support</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <form id="form-contact">
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input type="text" id="contact-name" class="form-control" placeholder="Your name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="contact-email" class="form-control" placeholder="name@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea id="contact-message" class="form-control" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Emergency Modal -->
+  <div id="modal-emergency" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px; text-align: center;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--accent-rose);">🚨 Emergency Ambulance Dispatch</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+      <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+        Instant hotline to emergency dispatchers, cardiac support, and fast ICU ambulance service.
+      </p>
+      <div style="background: rgba(244, 63, 94, 0.15); border: 2px solid var(--accent-rose); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem;">
+        <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-rose);">NATIONAL EMERGENCY HEALTHLINE</div>
+        <a href="tel:999" style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); text-decoration: none;">📞 999</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating 24/7 Emergency Button -->
+  <button class="floating-emergency-btn" onclick="App.openModal('modal-emergency')">
+    🚨 24/7 Emergency
+  </button>
+
+  <!-- JavaScript Application Bundle -->
+  <script src="js/pdfGenerator.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/patientDashboard.js"></script>
+  <script src="js/doctorDashboard.js"></script>
+  <script src="js/adminDashboard.js"></script>
+  <script src="js/videoConsult.js"></script>
+  <script src="js/payment.js"></script>
+  <script src="js/medicineReminder.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+
+</html>

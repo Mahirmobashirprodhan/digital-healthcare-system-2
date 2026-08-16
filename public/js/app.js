@@ -13,8 +13,34 @@ const App = {
     const savedTheme = localStorage.getItem('dh_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
+    // Setup mobile responsive navbar
+    this.setupMobileNav();
+
     // Setup global form listeners
     this.setupListeners();
+
+    // Initialize page-specific scripts based on pathname
+    const path = window.location.pathname;
+    if (path.includes('blood-donors')) {
+      BloodDonorPage.init();
+    } else if (path.includes('home-care')) {
+      HomeCarePage.init();
+    }
+  },
+
+  setupMobileNav() {
+    const toggleBtn = document.getElementById('nav-toggle-btn');
+    const navLinks = document.getElementById('nav-links');
+    if (toggleBtn && navLinks) {
+      toggleBtn.addEventListener('click', () => {
+        navLinks.classList.toggle('open');
+      });
+      navLinks.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('open');
+        });
+      });
+    }
   },
 
   toggleTheme() {
@@ -22,7 +48,7 @@ const App = {
     const next = current === 'light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('dh_theme', next);
-    this.showToast(`Switched to ${next} theme mode.`, 'info');
+    // this.showToast(`Switched to ${next} theme mode.`, 'info');
   },
 
   navigateTo(viewName) {
@@ -125,9 +151,7 @@ const App = {
         data.blood_group = document.getElementById('reg-blood-group').value;
         data.age = document.getElementById('reg-age').value;
       } else if (role === 'doctor') {
-        data.specialization = document.getElementById('reg-specialization').value;
-        data.hospital = document.getElementById('reg-hospital').value;
-        data.fee = document.getElementById('reg-fee').value;
+        data.specialization = document.getElementById('reg-specialization')?.value || 'General Physician';
       }
       Auth.register(data);
     });
@@ -175,13 +199,34 @@ const App = {
     // Lab Booking Form
     document.getElementById('form-lab-booking')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const labId = document.getElementById('lab-booking-test-id').value;
-      const date = document.getElementById('lab-booking-date').value;
-      const type = document.getElementById('lab-booking-type').value;
+
+      if (!Auth.getToken()) {
+        App.showToast('Please log in as a patient to book a lab test.', 'error');
+        App.closeModals();
+        App.openAuthModal('login');
+        return;
+      }
+
+      const labId   = document.getElementById('lab-booking-test-id').value;
+      const date    = document.getElementById('lab-booking-date').value;
+      const type    = document.getElementById('lab-booking-type').value;
       const address = document.getElementById('lab-booking-address').value;
-      const amount = parseFloat(document.getElementById('lab-booking-fee').textContent.replace('৳', '')) || 600;
+
+      // Read the total fee (already updated by onchange handlers, includes +৳200 if home)
+      const feeEl  = document.getElementById('lab-booking-fee');
+      const amount = parseFloat(feeEl.textContent.replace('৳', '').replace(',', '')) || 600;
+
+      if (!date) {
+        App.showToast('Please select a booking date.', 'error');
+        return;
+      }
+      if (!address.trim()) {
+        App.showToast('Please enter a collection address.', 'error');
+        return;
+      }
 
       App.closeModals();
+
       PaymentSystem.initCheckout(amount, 'LabTest', labId, async () => {
         try {
           const res = await fetch('/api/labs/book', {
@@ -199,10 +244,17 @@ const App = {
             })
           });
           const data = await res.json();
-          if (!res.ok) throw new Error(data.error);
+          if (!res.ok) throw new Error(data.error || 'Booking failed.');
 
-          App.showToast('Lab test booked successfully!', 'success');
-          App.navigateTo('patient-dashboard');
+          App.showToast('🧪 Lab test booked successfully!', 'success');
+
+          // Reload lab bookings panel and switch to My Bookings tab
+          if (window.PatientDashboard) {
+            PatientDashboard.loadLabBookings();
+            setTimeout(() => PatientDashboard.toggleLabView('bookings'), 300);
+            document.getElementById('panel-lab-tests')?.scrollIntoView({ behavior: 'smooth' });
+          }
+
         } catch (err) {
           App.showToast(err.message, 'error');
         }
@@ -310,6 +362,211 @@ const App = {
         App.showToast(err.message, 'error');
       }
     });
+  }
+};
+
+/* ==========================================================================
+   Blood Donor Dedicated Page Controller
+   ========================================================================== */
+const BloodDonorPage = {
+  init() {
+    this.searchDonors();
+    this.setupListeners();
+  },
+
+  async searchDonors() {
+    const groupEl = document.getElementById('page-bd-search-group');
+    const cityEl = document.getElementById('page-bd-search-city');
+    const resultsContainer = document.getElementById('page-blood-donors-results');
+    const badgeEl = document.getElementById('donor-count-badge');
+
+    if (!resultsContainer) return;
+
+    const group = groupEl ? groupEl.value : '';
+    const city = cityEl ? cityEl.value : '';
+
+    resultsContainer.innerHTML = '<div style="color: var(--text-muted); grid-column: 1/-1;">Searching blood donors database...</div>';
+
+    try {
+      const res = await fetch(`/api/blood-donors?blood_group=${encodeURIComponent(group)}&city=${encodeURIComponent(city)}`);
+      const data = await res.json();
+      const donors = data.donors || [];
+
+      if (badgeEl) {
+        badgeEl.textContent = `${donors.length} Donors Found`;
+      }
+
+      if (donors.length === 0) {
+        resultsContainer.innerHTML = `
+          <div style="grid-column: 1/-1; background: var(--bg-secondary); border: 1px dashed var(--border-color); padding: 2rem; border-radius: var(--radius-md); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🩸</div>
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">No Donors Found</h4>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">No active donors matched your criteria. Be the first to register as a voluntary donor!</p>
+          </div>
+        `;
+        return;
+      }
+
+      resultsContainer.innerHTML = donors.map(donor => `
+        <div class="blood-donor-card">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+              <strong style="font-size: 1.1rem;">${donor.name}</strong>
+              <span class="badge badge-rejected">${donor.blood_group}</span>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">
+              📍 ${donor.area ? donor.area + ', ' : ''}${donor.city}
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+              Last Donated: ${donor.last_donated || 'Never'}
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.4rem; background: var(--bg-secondary); padding: 0.4rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-weight: 600; font-size: 0.9rem; color: var(--text-primary);">
+            <span>📞</span> <span>${donor.phone}</span>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      if (resultsContainer) {
+        resultsContainer.innerHTML = `<div style="color: var(--accent-rose); grid-column: 1/-1;">Error loading donor list: ${err.message}</div>`;
+      }
+    }
+  },
+
+  setupListeners() {
+    const form = document.getElementById('page-form-blood-donor');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+          name: document.getElementById('page-donor-name').value,
+          blood_group: document.getElementById('page-donor-group').value,
+          city: document.getElementById('page-donor-city').value,
+          area: document.getElementById('page-donor-area').value,
+          phone: document.getElementById('page-donor-phone').value,
+          last_donated: document.getElementById('page-donor-last-date').value || 'Never'
+        };
+
+        try {
+          const res = await fetch('/api/blood-donors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to register');
+          App.showToast(data.message || 'Voluntary donor registration successful!', 'success');
+          form.reset();
+          this.searchDonors();
+        } catch (err) {
+          App.showToast(err.message, 'error');
+        }
+      });
+    }
+  }
+};
+
+/* ==========================================================================
+   Home Care Dedicated Page Controller
+   ========================================================================== */
+const HomeCarePage = {
+  init() {
+    this.loadUserRequests();
+    this.setupListeners();
+  },
+
+  async loadUserRequests() {
+    const container = document.getElementById('page-home-requests-list');
+    if (!container) return;
+
+    const user = Auth.getUser();
+    if (!user) {
+      container.innerHTML = `
+        <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; text-align: center;">
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Log in as a patient to view your home care request history and tracking.</p>
+          <button class="btn btn-primary btn-sm" onclick="App.openAuthModal('login')">🔑 Log In to Account</button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">Fetching your requests...</div>';
+
+    try {
+      const res = await fetch('/api/home-services/my-requests', {
+        headers: { 'Authorization': `Bearer ${Auth.getToken()}` }
+      });
+      const data = await res.json();
+      const requests = data.requests || [];
+
+      if (requests.length === 0) {
+        container.innerHTML = `
+          <div style="background: var(--bg-primary); border: 1px dashed var(--border-color); padding: 1.25rem; border-radius: var(--radius-md); text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            You have no home care requests yet. Submit a request using the form on the left!
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = requests.map(req => `
+        <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem;">
+            <strong style="font-size: 0.95rem;">${req.service_type}</strong>
+            <span class="badge badge-pending">${req.status || 'Pending'}</span>
+          </div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">
+            📅 Scheduled: ${req.schedule_date} • 📞 ${req.phone}
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+            📍 ${req.address}
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      container.innerHTML = `<div style="color: var(--accent-rose); font-size: 0.9rem;">Error fetching requests: ${err.message}</div>`;
+    }
+  },
+
+  setupListeners() {
+    const form = document.getElementById('page-form-home-service');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const user = Auth.getUser();
+        if (!user) {
+          App.showToast('Please log in to submit a home healthcare request.', 'error');
+          App.openAuthModal('login');
+          return;
+        }
+
+        const payload = {
+          service_type: document.getElementById('page-hs-service-type').value,
+          schedule_date: document.getElementById('page-hs-date').value,
+          phone: document.getElementById('page-hs-phone').value,
+          address: document.getElementById('page-hs-address').value,
+          notes: document.getElementById('page-hs-notes')?.value || '',
+          amount: 1500.0
+        };
+
+        try {
+          const res = await fetch('/api/home-services/request', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Auth.getToken()}`
+            },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to submit request');
+          App.showToast(data.message || 'Home healthcare request submitted successfully!', 'success');
+          form.reset();
+          this.loadUserRequests();
+        } catch (err) {
+          App.showToast(err.message, 'error');
+        }
+      });
+    }
   }
 };
 

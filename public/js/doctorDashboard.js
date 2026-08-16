@@ -4,12 +4,107 @@
 
 const DoctorDashboard = {
   currentAppts: [],
+  profileData: null,
 
   async loadAllData() {
     const user = Auth.getUser();
     if (!user || user.role !== 'doctor') return;
 
+    this.loadDoctorProfile();
     this.loadDoctorAppointments();
+  },
+
+  async loadDoctorProfile() {
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${Auth.getToken()}` }
+      });
+      const data = await res.json();
+      if (!res.ok) return;
+      
+      this.profileData = data.user;
+      const u = data.user;
+      const d = u.doctor_info || {};
+
+      const elName = document.getElementById('doc-dash-name');
+      const elSpec = document.getElementById('doc-dash-spec');
+      const elHosp = document.getElementById('doc-dash-hospital');
+      const elFee = document.getElementById('doc-dash-fee');
+
+      if (elName) elName.textContent = u.name || 'Doctor';
+      if (elSpec) elSpec.textContent = d.specialization || 'General Physician';
+      if (elHosp) elHosp.textContent = `Hospital: ${d.hospital || 'Not specified'}`;
+      if (elFee) elFee.textContent = `Fee: ৳${d.fee || 1000}`;
+
+    } catch (err) {
+      console.error(err);
+    }
+  },
+
+  async openProfileModal() {
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${Auth.getToken()}` }
+      });
+      const data = await res.json();
+      const u = data.user || Auth.getUser();
+      const d = u.doctor_info || {};
+
+      document.getElementById('doc-edit-name').value = u.name || '';
+      document.getElementById('doc-edit-phone').value = u.phone || '';
+      document.getElementById('doc-edit-spec').value = d.specialization || 'General Physician';
+      document.getElementById('doc-edit-fee').value = d.fee || 1000;
+      document.getElementById('doc-edit-hospital').value = d.hospital || '';
+      document.getElementById('doc-edit-qualification').value = d.qualification || 'MBBS';
+      document.getElementById('doc-edit-exp').value = d.experience_years || 5;
+      document.getElementById('doc-edit-time').value = d.available_time || '10:00 AM - 04:00 PM';
+      document.getElementById('doc-edit-about').value = d.about || '';
+
+      App.openModal('modal-doctor-profile');
+    } catch (err) {
+      App.showToast(err.message, 'error');
+    }
+  },
+
+  async submitProfile(e) {
+    e.preventDefault();
+    const name = document.getElementById('doc-edit-name').value;
+    const phone = document.getElementById('doc-edit-phone').value;
+    const specialization = document.getElementById('doc-edit-spec').value;
+    const fee = parseFloat(document.getElementById('doc-edit-fee').value) || 1000.0;
+    const hospital = document.getElementById('doc-edit-hospital').value;
+    const qualification = document.getElementById('doc-edit-qualification').value;
+    const experience_years = parseInt(document.getElementById('doc-edit-exp').value) || 5;
+    const available_time = document.getElementById('doc-edit-time').value;
+    const about = document.getElementById('doc-edit-about').value;
+
+    try {
+      const res = await fetch('/api/doctors/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Auth.getToken()}`
+        },
+        body: JSON.stringify({
+          name, phone, specialization, fee, hospital, qualification, experience_years, available_time, about
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update profile.');
+
+      const currentUser = Auth.getUser();
+      if (currentUser && name) {
+        currentUser.name = name;
+        localStorage.setItem(Auth.userKey, JSON.stringify(currentUser));
+        Auth.updateNavUI();
+      }
+
+      App.showToast(data.message, 'success');
+      App.closeModals();
+      this.loadDoctorProfile();
+    } catch (err) {
+      App.showToast(err.message, 'error');
+    }
   },
 
   async loadDoctorAppointments() {
@@ -50,11 +145,37 @@ const DoctorDashboard = {
     if (!tbody) return;
 
     if (this.currentAppts.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No scheduled patient appointments found.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No scheduled patient appointments found.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = this.currentAppts.map(a => `
+    tbody.innerHTML = this.currentAppts.map(a => {
+      // Payment badge
+      let payBadge = '';
+      if (a.payment_status === 'Paid') {
+        payBadge = `<span class="badge badge-confirmed" title="Payment received">✓ Paid</span>`;
+      } else if (a.payment_status === 'Refunded') {
+        payBadge = `<span class="badge badge-cancelled" title="Payment refunded">💰 Refunded</span>`;
+      } else {
+        payBadge = `<span class="badge badge-pending" title="Payment pending">⏳ Unpaid</span>`;
+      }
+
+      // Action buttons
+      let actions = '';
+      if (a.status === 'Confirmed') {
+        actions = `
+          <button class="btn btn-emerald btn-sm" onclick="VideoConsult.startCall('${a.patient_name.replace(/'/g, "\\'")}', 'Patient', ${a.id})">🎥 Consult</button>
+          <button class="btn btn-primary btn-sm" onclick="DoctorDashboard.openPrescriptionModal(${a.id}, ${a.patient_id}, '${a.patient_name.replace(/'/g, "\\'")}')">✍️ Write Rx</button>
+          <button class="btn btn-rose btn-sm" onclick="DoctorDashboard.updateStatus(${a.id}, 'Cancelled')">✕ Cancel</button>
+        `;
+      } else if (a.status === 'Pending') {
+        actions = `
+          <button class="btn btn-emerald btn-sm" onclick="DoctorDashboard.updateStatus(${a.id}, 'Confirmed')">Accept</button>
+          <button class="btn btn-rose btn-sm" onclick="DoctorDashboard.updateStatus(${a.id}, 'Rejected')">Reject</button>
+        `;
+      }
+
+      return `
       <tr>
         <td>
           <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -68,23 +189,15 @@ const DoctorDashboard = {
         <td>${a.date}<br><small style="color: var(--accent-blue); font-weight: 600;">${a.time_slot}</small></td>
         <td>${a.symptoms || 'Routine Checkup'}</td>
         <td><span class="badge badge-${a.status.toLowerCase()}">${a.status}</span></td>
+        <td>${payBadge}</td>
         <td>
-          <button class="btn btn-secondary btn-sm" onclick="DoctorDashboard.viewPatientRecords(${a.patient_id}, '${a.patient_name.replace(/'/g, "\\'")}')" title="View Patient Medical History (Logged)">
+          <button class="btn btn-secondary btn-sm" onclick="DoctorDashboard.viewPatientRecords(${a.patient_id}, '${a.patient_name.replace(/'/g, "\\'")}')" title="View Patient Medical History">
             🔒 Patient Records
           </button>
         </td>
-        <td>
-          ${a.status === 'Confirmed' ? `
-            <button class="btn btn-emerald btn-sm" onclick="VideoConsult.startCall('${a.patient_name.replace(/'/g, "\\'")}', 'Patient', ${a.id})">🎥 Consult</button>
-            <button class="btn btn-primary btn-sm" onclick="DoctorDashboard.openPrescriptionModal(${a.id}, ${a.patient_id}, '${a.patient_name.replace(/'/g, "\\'")}')">✍️ Write Rx</button>
-          ` : ''}
-          ${a.status === 'Pending' ? `
-            <button class="btn btn-emerald btn-sm" onclick="DoctorDashboard.updateStatus(${a.id}, 'Confirmed')">Accept</button>
-            <button class="btn btn-rose btn-sm" onclick="DoctorDashboard.updateStatus(${a.id}, 'Rejected')">Reject</button>
-          ` : ''}
-        </td>
-      </tr>
-    `).join('');
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
   },
 
   async updateStatus(apptId, status) {
