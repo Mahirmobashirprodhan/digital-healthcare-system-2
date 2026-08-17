@@ -92,7 +92,17 @@ const AdminDashboard = {
       const tbody = document.getElementById('admin-users-list');
       if (!tbody) return;
 
-      tbody.innerHTML = users.map(u => `
+      tbody.innerHTML = users.map(u => {
+        let actionHtml = `<span style="color: var(--text-muted); font-size: 0.8rem;">—</span>`;
+        if (u.role === 'doctor') {
+          actionHtml = `
+            <button class="btn btn-rose btn-sm" onclick="AdminDashboard.removeDoctor(${u.id}, '${u.name.replace(/'/g, "\\'")}')" title="Remove this doctor profile">
+              🗑️ Remove Doctor
+            </button>
+          `;
+        }
+
+        return `
         <tr>
           <td><strong>${u.name}</strong></td>
           <td>${u.email}</td>
@@ -100,11 +110,35 @@ const AdminDashboard = {
           <td>${u.phone || 'N/A'}</td>
           <td><span class="badge badge-active">Verified</span></td>
           <td>${new Date(u.created_at).toLocaleDateString()}</td>
-        </tr>
-      `).join('');
+          <td>${actionHtml}</td>
+        </tr>`;
+      }).join('');
 
     } catch (err) {
       console.error(err);
+    }
+  },
+
+  async removeDoctor(userId, doctorName) {
+    if (!confirm(`Are you sure you want to remove Dr. ${doctorName}'s profile?\n\nThis action will delete the doctor profile and account from the system.`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/doctors/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${Auth.getToken()}`
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to remove doctor profile.');
+
+      App.showToast(data.message || `Doctor profile '${doctorName}' removed successfully!`, 'success');
+      this.loadAllData();
+      if (window.DoctorSearch) DoctorSearch.fetchDoctors();
+    } catch (err) {
+      App.showToast(err.message, 'error');
     }
   },
 

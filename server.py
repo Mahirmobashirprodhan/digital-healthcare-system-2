@@ -385,7 +385,12 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                     user = self.get_auth_user()
                     if not user or user['role'] != 'admin':
                         return self.send_error_json("Admin access required", 403)
-                    cursor.execute("SELECT id, name, email, role, phone, is_verified, created_at FROM users ORDER BY created_at DESC")
+                    cursor.execute("""
+                    SELECT u.id, u.name, u.email, u.role, u.phone, u.is_verified, u.created_at, d.id as doctor_id, d.specialization
+                    FROM users u
+                    LEFT JOIN doctors d ON u.id = d.user_id
+                    ORDER BY u.created_at DESC
+                    """)
                     return self.send_json({"users": [dict(r) for r in cursor.fetchall()]})
 
                 elif path == '/api/admin/appointments':
@@ -1012,6 +1017,51 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
         # Clinical Data Immutability Guard: Medical records & prescriptions cannot be deleted
         if path.startswith('/api/medical-records') or path.startswith('/api/prescriptions') or path.startswith('/api/labs/reports'):
             return self.send_error_json("Clinical Data Protection: Patient medical records, lab reports, and prescriptions are permanent legal healthcare records and cannot be deleted.", 403)
+
+        # Admin Delete Doctor Profile / User Endpoint
+        if path.startswith('/api/admin/doctors/') or path.startswith('/api/admin/users/'):
+            user = self.get_auth_user()
+            if not user or user['role'] != 'admin':
+                return self.send_error_json("Admin access required", 403)
+
+            target_id = int(path.split('/')[-1])
+            conn = get_db()
+            cursor = conn.cursor()
+            try:
+                cursor.execute("SELECT * FROM users WHERE id=?", (target_id,))
+                target_user = cursor.fetchone()
+                if not target_user:
+                    # Also check if target_id is doctor_id
+                    cursor.execute("SELECT user_id FROM doctors WHERE id=?", (target_id,))
+                    d_row = cursor.fetchone()
+                    if d_row:
+                        cursor.execute("SELECT * FROM users WHERE id=?", (d_row['user_id'],))
+                        target_user = cursor.fetchone()
+
+                if not target_user:
+                    return self.send_error_json("Target user/doctor profile not found", 404)
+
+                user_id = target_user['id']
+
+                # Find associated doctor record if any
+                cursor.execute("SELECT id FROM doctors WHERE user_id=?", (user_id,))
+                doc_record = cursor.fetchone()
+                if doc_record:
+                    doc_id = doc_record['id']
+                    # Clean up doctor associations
+                    cursor.execute("DELETE FROM reviews WHERE doctor_id=?", (doc_id,))
+                    cursor.execute("DELETE FROM prescriptions WHERE doctor_id=?", (doc_id,))
+                    cursor.execute("DELETE FROM appointments WHERE doctor_id=?", (doc_id,))
+                    cursor.execute("DELETE FROM doctors WHERE id=?", (doc_id,))
+
+                # Remove notifications and user account
+                cursor.execute("DELETE FROM notifications WHERE user_id=?", (user_id,))
+                cursor.execute("DELETE FROM users WHERE id=?", (user_id,))
+                conn.commit()
+
+                return self.send_json({"message": f"Doctor profile '{target_user['name']}' has been removed successfully."})
+            finally:
+                conn.close()
 
         if path.startswith('/api/reminders/'):
             rem_id = path.split('/')[-1]
