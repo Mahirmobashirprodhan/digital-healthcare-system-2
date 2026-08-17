@@ -409,6 +409,44 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
                     """)
                     return self.send_json({"appointments": [dict(r) for r in cursor.fetchall()]})
 
+                elif path == '/api/staff/stats':
+                    user = self.get_auth_user()
+                    if not user or user['role'] not in ['staff', 'admin']:
+                        return self.send_error_json("Staff or Admin access required", 403)
+                    
+                    cursor.execute("SELECT COUNT(*) FROM lab_bookings")
+                    total_bookings = cursor.fetchone()[0]
+                    cursor.execute("SELECT COUNT(*) FROM lab_bookings WHERE status='Scheduled'")
+                    pending_samples = cursor.fetchone()[0]
+                    cursor.execute("SELECT COUNT(*) FROM lab_bookings WHERE status='Processing'")
+                    processing_tests = cursor.fetchone()[0]
+                    cursor.execute("SELECT COUNT(*) FROM lab_bookings WHERE status='Completed'")
+                    completed_reports = cursor.fetchone()[0]
+
+                    return self.send_json({
+                        "total_bookings": total_bookings,
+                        "pending_samples": pending_samples,
+                        "processing_tests": processing_tests,
+                        "completed_reports": completed_reports
+                    })
+
+                elif path == '/api/staff/lab-bookings':
+                    user = self.get_auth_user()
+                    if not user or user['role'] not in ['staff', 'admin']:
+                        return self.send_error_json("Staff or Admin access required", 403)
+                    
+                    cursor.execute("""
+                    SELECT lb.*, lt.title as test_title, lt.department, lt.price, lt.sample_type, lt.turnaround_time,
+                           u.name as patient_name, u.email as patient_email, u.phone as patient_phone,
+                           p.gender as patient_gender, p.age as patient_age, p.blood_group as patient_blood_group
+                    FROM lab_bookings lb
+                    JOIN lab_tests lt ON lb.lab_test_id = lt.id
+                    JOIN users u ON lb.patient_id = u.id
+                    LEFT JOIN patients p ON u.id = p.user_id
+                    ORDER BY lb.created_at DESC
+                    """)
+                    return self.send_json({"bookings": [dict(r) for r in cursor.fetchall()]})
+
                 else:
                     return self.send_error_json("Endpoint not found", 404)
 
@@ -1000,6 +1038,50 @@ class HealthcareRequestHandler(http.server.BaseHTTPRequestHandler):
 
                     conn.commit()
                     return self.send_json({"message": "Patient profile updated successfully!"})
+
+                # Staff Upload Lab Report
+                elif path.startswith('/api/staff/lab-bookings/') and path.endswith('/upload-report'):
+                    booking_id = int(path.split('/')[-2])
+                    user = self.get_auth_user()
+                    if not user or user['role'] not in ['staff', 'admin']:
+                        return self.send_error_json("Staff or Admin access required", 403)
+                    
+                    status = body.get('status', 'Completed')
+                    report_url = body.get('report_url', f"Lab_Report_LAB-{booking_id}.pdf")
+                    report_notes = body.get('report_notes', 'All diagnostic parameters tested and verified by laboratory pathologist.')
+
+                    cursor.execute("""
+                    SELECT lb.*, lt.title as test_title, lt.department, u.name as patient_name
+                    FROM lab_bookings lb
+                    JOIN lab_tests lt ON lb.lab_test_id = lt.id
+                    JOIN users u ON lb.patient_id = u.id
+                    WHERE lb.id=?
+                    """, (booking_id,))
+                    booking = cursor.fetchone()
+                    if not booking:
+                        return self.send_error_json("Lab booking not found", 404)
+
+                    cursor.execute("""
+                    UPDATE lab_bookings
+                    SET status=?, report_url=?, report_notes=?, uploaded_at=CURRENT_TIMESTAMP
+                    WHERE id=?
+                    """, (status, report_url, report_notes, booking_id))
+
+                    if status == 'Completed':
+                        # Add to patient medical records
+                        cursor.execute("""
+                        INSERT INTO medical_records (patient_id, title, record_type, doctor_name, notes, file_url, date)
+                        VALUES (?, ?, 'Lab Result', 'Central Diagnostic Pathology (Staff)', ?, ?, date('now'))
+                        """, (booking['patient_id'], f"Lab Report: {booking['test_title']}", report_notes, report_url))
+
+                        # Notify patient
+                        cursor.execute("""
+                        INSERT INTO notifications (user_id, title, message, type)
+                        VALUES (?, '🧪 Lab Report Ready!', ?, 'lab_report')
+                        """, (booking['patient_id'], f"Your diagnostic report for '{booking['test_title']}' has been uploaded and added to your Medical Records."))
+
+                    conn.commit()
+                    return self.send_json({"message": f"Lab report for '{booking['test_title']}' has been uploaded and marked as {status}!"})
 
                 # Clinical Data Immutability Guard: Medical records & prescriptions cannot be altered
                 elif path.startswith('/api/medical-records') or path.startswith('/api/prescriptions') or path.startswith('/api/labs/reports'):

@@ -38,6 +38,8 @@
           onclick="App.navigateTo('patient-dashboard')">My Dashboard</a></li>
       <li><a class="nav-link" id="nav-link-doctor" style="display:none;"
           onclick="App.navigateTo('doctor-dashboard')">Doctor Portal</a></li>
+      <li><a class="nav-link" id="nav-link-staff" style="display:none;"
+          onclick="App.navigateTo('staff-dashboard')">🧪 Lab Portal</a></li>
       <li><a class="nav-link" id="nav-link-admin" style="display:none;"
           onclick="App.navigateTo('admin-dashboard')">Admin Panel</a></li>
     </ul>
@@ -507,6 +509,84 @@
               </tr>
             </thead>
             <tbody id="admin-users-list">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. LAB ASSISTANT & STAFF DASHBOARD VIEW -->
+    <section id="view-staff-dashboard" class="view-section">
+      <div class="section-header">
+        <h2 class="section-title">🧪 Diagnostic Pathology & Lab Staff Portal</h2>
+        <p class="section-desc">Manage diagnostic test bookings, process sample collections, and upload clinical test PDF reports to patient profiles.</p>
+      </div>
+
+      <!-- Staff Overview Stats -->
+      <div class="stats-cards-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrapper stat-icon-purple">🧪</div>
+          <div class="stat-info">
+            <h4 id="staff-stat-total">0</h4>
+            <p>Total Lab Bookings</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper stat-icon-amber">⏳</div>
+          <div class="stat-info">
+            <h4 id="staff-stat-pending">0</h4>
+            <p>Pending Sample Collection</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper stat-icon-blue">🔬</div>
+          <div class="stat-info">
+            <h4 id="staff-stat-processing">0</h4>
+            <p>Tests in Analysis</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrapper stat-icon-emerald">✅</div>
+          <div class="stat-info">
+            <h4 id="staff-stat-completed">0</h4>
+            <p>Completed Reports</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lab Test Bookings Management Table -->
+      <div class="card-panel">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 1rem;">
+          <h3 class="panel-title">Diagnostic Test Queue & Patient Reports</h3>
+          
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <input type="text" id="staff-search-input" class="form-control" placeholder="🔍 Search patient or test..." 
+              style="width: 220px; padding: 0.4rem 0.75rem; font-size: 0.85rem;" oninput="StaffDashboard.renderBookings()">
+            <button class="btn btn-primary btn-sm staff-filter-btn" data-status="all" onclick="StaffDashboard.setFilter('all')">All</button>
+            <button class="btn btn-secondary btn-sm staff-filter-btn" data-status="Scheduled" onclick="StaffDashboard.setFilter('Scheduled')">Scheduled</button>
+            <button class="btn btn-secondary btn-sm staff-filter-btn" data-status="Processing" onclick="StaffDashboard.setFilter('Processing')">Processing</button>
+            <button class="btn btn-secondary btn-sm staff-filter-btn" data-status="Completed" onclick="StaffDashboard.setFilter('Completed')">Completed</button>
+          </div>
+        </div>
+
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Booking ID</th>
+                <th>Patient Details</th>
+                <th>Diagnostic Test</th>
+                <th>Schedule / Mode</th>
+                <th>Sample Status</th>
+                <th>Report Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="staff-lab-bookings-list">
               <!-- Injected via JS -->
             </tbody>
           </table>
@@ -1351,6 +1431,53 @@
     </div>
   </div>
 
+  <!-- 15. LAB REPORT UPLOAD MODAL (STAFF) -->
+  <div id="modal-upload-lab-report" class="modal-overlay">
+    <div class="modal-content" style="max-width: 550px;">
+      <div class="modal-header">
+        <h3 class="modal-title">📤 Upload Diagnostic Lab Report</h3>
+        <button class="close-btn" onclick="App.closeModals()">✕</button>
+      </div>
+
+      <!-- Booking Info Summary -->
+      <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid var(--accent-blue); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem; font-size: 0.88rem;">
+        <div style="margin-bottom: 0.35rem;">👤 Patient: <strong id="upload-lab-patient-name" style="color: var(--text-primary);"></strong></div>
+        <div style="margin-bottom: 0.35rem;">🧪 Test: <strong id="upload-lab-test-title" style="color: var(--accent-blue);"></strong></div>
+        <div>🧫 Sample: <span id="upload-lab-sample-info" style="color: var(--text-secondary);"></span></div>
+      </div>
+
+      <form id="form-upload-lab-report" onsubmit="StaffDashboard.submitReport(event)">
+        <input type="hidden" id="upload-lab-id">
+
+        <div class="form-group">
+          <label class="form-label">Update Test Status</label>
+          <select id="upload-lab-status" class="form-control">
+            <option value="Completed">✅ Completed — Publish Report to Patient Profile</option>
+            <option value="Processing">🔬 Processing — Sample Under Analysis in Lab</option>
+            <option value="Scheduled">⏳ Scheduled — Awaiting Sample Collection</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Diagnostic Findings & Clinical Values</label>
+          <textarea id="upload-lab-notes" class="form-control" rows="4" placeholder="Enter test observations, biomarker values, or pathologist notes..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">PDF Report Document Name / Reference</label>
+          <input type="text" id="upload-lab-filename" class="form-control" placeholder="Lab_Report_LAB-101.pdf" required>
+          <small style="color: var(--text-secondary); font-size: 0.78rem; margin-top: 0.25rem; display: block;">
+            ℹ️ This report will appear in the patient's medical timeline and enable instant PDF export.
+          </small>
+        </div>
+
+        <button type="submit" id="btn-submit-lab-report" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+          💾 Save & Publish to Patient Profile
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Floating 24/7 Emergency Button -->
   <button class="floating-emergency-btn" onclick="App.openModal('modal-emergency')">
     🚨 24/7 Emergency
@@ -1363,6 +1490,7 @@
   <script src="js/patientDashboard.js"></script>
   <script src="js/doctorDashboard.js"></script>
   <script src="js/adminDashboard.js"></script>
+  <script src="js/staffDashboard.js"></script>
   <script src="js/videoConsult.js"></script>
   <script src="js/payment.js"></script>
   <script src="js/medicineReminder.js"></script>

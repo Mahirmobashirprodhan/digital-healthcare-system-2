@@ -146,35 +146,44 @@ const PDFGenerator = {
         </div>
 
         <div class="box">
-          <strong>Test Name:</strong> ${booking.title || 'Diagnostic Panel'}<br>
+          <strong>Test Name:</strong> ${booking.test_title || booking.title || 'Diagnostic Panel'}<br>
           <strong>Department:</strong> ${booking.department || 'General Diagnostic'}<br>
-          <strong>Sample Type:</strong> ${booking.sample_collection_type || 'Blood'}
+          <strong>Sample Type:</strong> ${booking.sample_type || booking.sample_collection_type || 'Blood'}<br>
+          <strong>Patient:</strong> ${booking.patient_name || 'Registered Patient'}
         </div>
 
         <h3>Test Results Summary</h3>
         <table>
           <thead>
             <tr>
-              <th>Parameter</th>
-              <th>Result</th>
+              <th>Parameter / Biomarker</th>
+              <th>Clinical Result</th>
               <th>Reference Interval</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Primary Test Marker</td>
+              <td>Primary Diagnostic Marker</td>
               <td><strong>Normal / Optimal</strong></td>
-              <td>Within Normal Standard</td>
+              <td>Within Standard Range</td>
               <td><span style="color: #10b981; font-weight: bold;">PASSED</span></td>
             </tr>
           </tbody>
         </table>
 
+        ${booking.report_notes ? `
+        <div style="margin-top: 20px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
+          <strong style="color: #059669;">Pathologist Diagnostic Findings & Notes:</strong>
+          <p style="margin: 6px 0 0; font-size: 14px; line-height: 1.5; color: #334155;">${booking.report_notes}</p>
+        </div>
+        ` : ''}
+
         <br><br>
         <div style="text-align: right; margin-top: 40px;">
           __________________________<br>
-          <strong>Chief Pathologist Signature</strong>
+          <strong>Chief Pathologist Signature</strong><br>
+          <small style="color: #64748b;">Central Diagnostic Pathology Laboratory</small>
         </div>
 
         <script>

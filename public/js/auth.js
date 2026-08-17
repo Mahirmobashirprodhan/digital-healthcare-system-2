@@ -53,6 +53,7 @@ const Auth = {
       if (data.user.role === 'patient') App.navigateTo('patient-dashboard');
       else if (data.user.role === 'doctor') App.navigateTo('doctor-dashboard');
       else if (data.user.role === 'admin') App.navigateTo('admin-dashboard');
+      else if (data.user.role === 'staff') App.navigateTo('staff-dashboard');
 
     } catch (err) {
       App.showToast(err.message, 'error');
@@ -77,6 +78,7 @@ const Auth = {
 
       if (data.user.role === 'patient') App.navigateTo('patient-dashboard');
       else if (data.user.role === 'doctor') App.navigateTo('doctor-dashboard');
+      else if (data.user.role === 'staff') App.navigateTo('staff-dashboard');
 
     } catch (err) {
       App.showToast(err.message, 'error');
@@ -224,6 +226,7 @@ const Auth = {
       if (data.user.role === 'patient')      App.navigateTo('patient-dashboard');
       else if (data.user.role === 'doctor')  App.navigateTo('doctor-dashboard');
       else if (data.user.role === 'admin')   App.navigateTo('admin-dashboard');
+      else if (data.user.role === 'staff')   App.navigateTo('staff-dashboard');
 
     } catch (err) {
       if (btn) { btn.textContent = 'Continue'; btn.disabled = false; }
@@ -237,11 +240,13 @@ const Auth = {
     const patientDashLink = document.getElementById('nav-link-patient');
     const doctorDashLink = document.getElementById('nav-link-doctor');
     const adminDashLink = document.getElementById('nav-link-admin');
+    const staffDashLink = document.getElementById('nav-link-staff');
 
     // Reset visibility
     if (patientDashLink) patientDashLink.style.display = 'none';
     if (doctorDashLink) doctorDashLink.style.display = 'none';
     if (adminDashLink) adminDashLink.style.display = 'none';
+    if (staffDashLink) staffDashLink.style.display = 'none';
 
     if (!user) {
       navAuthContainer.innerHTML = `
@@ -259,12 +264,15 @@ const Auth = {
       } else if (user.role === 'admin') {
         if (adminDashLink) adminDashLink.style.display = 'block';
         dashBtn = `<button class="btn btn-secondary btn-sm" onclick="App.navigateTo('admin-dashboard')">Admin Panel</button>`;
+      } else if (user.role === 'staff') {
+        if (staffDashLink) staffDashLink.style.display = 'block';
+        dashBtn = `<button class="btn btn-secondary btn-sm" onclick="App.navigateTo('staff-dashboard')">🧪 Lab Staff Portal</button>`;
       }
 
       navAuthContainer.innerHTML = `
         ${dashBtn}
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <img src="${user.profile_image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-blue);">
+          <img src="${user.profile_image || 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=100&q=80'}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-blue);">
           <span style="font-weight: 600; font-size: 0.9rem; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${user.name}</span>
           <button class="btn btn-sm btn-rose" onclick="Auth.logout()" title="Logout" style="padding: 0.3rem 0.6rem;">✕</button>
         </div>
@@ -272,3 +280,4 @@ const Auth = {
     }
   }
 };
+

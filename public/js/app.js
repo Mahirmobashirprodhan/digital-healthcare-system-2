@@ -70,6 +70,7 @@ const App = {
       if (viewName === 'patient-dashboard') PatientDashboard.loadAllData();
       else if (viewName === 'doctor-dashboard') DoctorDashboard.loadAllData();
       else if (viewName === 'admin-dashboard') AdminDashboard.loadAllData();
+      else if (viewName === 'staff-dashboard' && window.StaffDashboard) StaffDashboard.loadAllData();
       else if (viewName === 'search') DoctorSearch.fetchDoctors();
     }
   },

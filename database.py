@@ -21,7 +21,7 @@ def init_db():
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        role TEXT NOT NULL CHECK(role IN ('patient', 'doctor', 'admin')),
+        role TEXT NOT NULL CHECK(role IN ('patient', 'doctor', 'admin', 'staff')),
         phone TEXT,
         profile_image TEXT,
         is_verified INTEGER DEFAULT 1,
